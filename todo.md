@@ -23,3 +23,9 @@
 - [x] Fix: Download links now properly redirect to S3 with target="_blank"
 - [x] Fix: Delete courseware functionality implemented with authorization checks
 - [x] Fix: Improved error handling with TRPCError for better user feedback
+- [x] Fix: Serve uploaded courseware files through stable backend preview and download routes that re-sign storage access on demand
+- [x] Fix: Sanitize uploaded file storage keys to avoid spaces and special characters in object paths
+- [x] Fix: Update courseware detail page to use stable preview and download API endpoints instead of direct storage URLs
+- [x] Fix: Enable database, server, and user capabilities so deployed OAuth login has DATABASE_URL and session support
+- [x] Fix: Remove duplicate Home page authentication declaration introduced during capability upgrade
+- [x] Verify: Database migration, TypeScript check, unit tests, and production build all pass after login and PDF fixes

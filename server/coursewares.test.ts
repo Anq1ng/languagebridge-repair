@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { appRouter } from "./routers";
+import { createCourseware } from "./db";
 import type { TrpcContext } from "./_core/context";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
@@ -7,16 +8,28 @@ type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 // Mock the db module
 vi.mock("./db", () => ({
   getAllSubjects: vi.fn().mockResolvedValue([
-    { id: 1, slug: "chemistry", nameEn: "Chemistry", nameCn: "化学", descriptionEn: "Chemistry desc", descriptionCn: "化学描述", createdAt: new Date() },
-    { id: 2, slug: "physics", nameEn: "Physics", nameCn: "物理", descriptionEn: "Physics desc", descriptionCn: "物理描述", createdAt: new Date() },
+    { id: 1, slug: "physics", nameEn: "Physics", nameCn: "物理", descriptionEn: "Physics desc", descriptionCn: "物理描述", createdAt: new Date() },
+    { id: 2, slug: "chemistry", nameEn: "Chemistry", nameCn: "化学", descriptionEn: "Chemistry desc", descriptionCn: "化学描述", createdAt: new Date() },
+    { id: 3, slug: "biology", nameEn: "Biology", nameCn: "生物", descriptionEn: "Biology desc", descriptionCn: "生物描述", createdAt: new Date() },
+    { id: 4, slug: "calculus-bc", nameEn: "Calculus BC", nameCn: "微积分 BC", descriptionEn: "Calculus BC desc", descriptionCn: "微积分 BC 描述", createdAt: new Date() },
   ]),
   getSubjectBySlug: vi.fn().mockImplementation(async (slug: string) => {
-    if (slug === "chemistry") return { id: 1, slug: "chemistry", nameEn: "Chemistry", nameCn: "化学" };
-    return undefined;
+    const subjects = [
+      { id: 1, slug: "physics", nameEn: "Physics", nameCn: "物理" },
+      { id: 2, slug: "chemistry", nameEn: "Chemistry", nameCn: "化学" },
+      { id: 3, slug: "biology", nameEn: "Biology", nameCn: "生物" },
+      { id: 4, slug: "calculus-bc", nameEn: "Calculus BC", nameCn: "微积分 BC" },
+    ];
+    return subjects.find((subject) => subject.slug === slug);
   }),
   getSubjectById: vi.fn().mockImplementation(async (id: number) => {
-    if (id === 1) return { id: 1, slug: "chemistry", nameEn: "Chemistry", nameCn: "化学" };
-    return undefined;
+    const subjects = [
+      { id: 1, slug: "physics", nameEn: "Physics", nameCn: "物理" },
+      { id: 2, slug: "chemistry", nameEn: "Chemistry", nameCn: "化学" },
+      { id: 3, slug: "biology", nameEn: "Biology", nameCn: "生物" },
+      { id: 4, slug: "calculus-bc", nameEn: "Calculus BC", nameCn: "微积分 BC" },
+    ];
+    return subjects.find((subject) => subject.id === id);
   }),
   listCoursewares: vi.fn().mockResolvedValue({ items: [], total: 0 }),
   getCoursewareById: vi.fn().mockResolvedValue(undefined),
@@ -66,12 +79,24 @@ describe("subjects", () => {
 
     const result = await caller.subjects.list();
 
-    expect(result).toHaveLength(2);
+    expect(result).toHaveLength(4);
+    expect(result.map((subject) => subject.slug)).toEqual([
+      "physics",
+      "chemistry",
+      "biology",
+      "calculus-bc",
+    ]);
     expect(result[0]).toMatchObject({
       id: 1,
-      slug: "chemistry",
-      nameEn: "Chemistry",
-      nameCn: "化学",
+      slug: "physics",
+      nameEn: "Physics",
+      nameCn: "物理",
+    });
+    expect(result[3]).toMatchObject({
+      id: 4,
+      slug: "calculus-bc",
+      nameEn: "Calculus BC",
+      nameCn: "微积分 BC",
     });
     expect(result[0]).toHaveProperty("coursewareCount");
   });
@@ -80,12 +105,12 @@ describe("subjects", () => {
     const ctx = createPublicContext();
     const caller = appRouter.createCaller(ctx);
 
-    const result = await caller.subjects.getBySlug({ slug: "chemistry" });
+    const result = await caller.subjects.getBySlug({ slug: "calculus-bc" });
 
     expect(result).toMatchObject({
-      id: 1,
-      slug: "chemistry",
-      nameEn: "Chemistry",
+      id: 4,
+      slug: "calculus-bc",
+      nameEn: "Calculus BC",
     });
   });
 
@@ -150,7 +175,7 @@ describe("coursewares", () => {
     const result = await caller.coursewares.upload({
       titleEn: "Test Courseware",
       titleCn: "测试课件",
-      subjectId: 1,
+      subjectId: 4,
       fileName: "test.pdf",
       fileType: "pdf",
       fileSize: 1024,
@@ -163,6 +188,7 @@ describe("coursewares", () => {
       downloadUrl: "/api/coursewares/1/download",
       storageUrl: "/manus-storage/test-key",
     });
+    expect(createCourseware).toHaveBeenCalledWith(expect.objectContaining({ subjectId: 4 }));
   });
 
   it("requires authentication for delete", async () => {

@@ -1,6 +1,6 @@
 import { eq, like, desc, sql, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, subjects, coursewares, InsertCourseware } from "../drizzle/schema";
+import { InsertUser, users, subjects, coursewares, InsertCourseware, InsertSubject } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -91,15 +91,71 @@ export async function getUserByOpenId(openId: string) {
 
 // ===== Subjects =====
 
+export const REQUIRED_SUBJECTS: InsertSubject[] = [
+  {
+    slug: "physics",
+    nameEn: "Physics",
+    nameCn: "物理",
+    descriptionEn: "Courseware for mechanics, electricity, magnetism, waves, thermodynamics, and modern physics.",
+    descriptionCn: "力学、电磁学、波、热学与现代物理相关课件。",
+  },
+  {
+    slug: "chemistry",
+    nameEn: "Chemistry",
+    nameCn: "化学",
+    descriptionEn: "Courseware for atomic structure, chemical bonding, reactions, stoichiometry, and laboratory concepts.",
+    descriptionCn: "原子结构、化学键、化学反应、化学计量与实验概念相关课件。",
+  },
+  {
+    slug: "biology",
+    nameEn: "Biology",
+    nameCn: "生物",
+    descriptionEn: "Courseware for cells, genetics, evolution, ecology, physiology, and biological systems.",
+    descriptionCn: "细胞、遗传、进化、生态、生理与生物系统相关课件。",
+  },
+  {
+    slug: "calculus-bc",
+    nameEn: "Calculus BC",
+    nameCn: "微积分 BC",
+    descriptionEn: "Courseware for limits, derivatives, integrals, series, parametric equations, polar functions, and vector topics.",
+    descriptionCn: "极限、导数、积分、级数、参数方程、极坐标函数与向量主题相关课件。",
+  },
+];
+
+const REQUIRED_SUBJECT_SLUGS = REQUIRED_SUBJECTS.map((subject) => subject.slug);
+
+function orderRequiredSubjects<T extends { slug: string }>(subjectList: T[]): T[] {
+  return REQUIRED_SUBJECT_SLUGS
+    .map((slug) => subjectList.find((subject) => subject.slug === slug))
+    .filter((subject): subject is T => Boolean(subject));
+}
+
+export async function ensureRequiredSubjects() {
+  const db = await getDb();
+  if (!db) return;
+
+  const existingSubjects = await db.select().from(subjects);
+  const existingSlugs = new Set(existingSubjects.map((subject) => subject.slug));
+  const missingSubjects = REQUIRED_SUBJECTS.filter((subject) => !existingSlugs.has(subject.slug));
+
+  if (missingSubjects.length > 0) {
+    await db.insert(subjects).values(missingSubjects);
+  }
+}
+
 export async function getAllSubjects() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(subjects);
+  await ensureRequiredSubjects();
+  const subjectList = await db.select().from(subjects);
+  return orderRequiredSubjects(subjectList);
 }
 
 export async function getSubjectBySlug(slug: string) {
   const db = await getDb();
   if (!db) return undefined;
+  if (!REQUIRED_SUBJECT_SLUGS.includes(slug)) return undefined;
+  await ensureRequiredSubjects();
   const result = await db.select().from(subjects).where(eq(subjects.slug, slug)).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
@@ -107,8 +163,11 @@ export async function getSubjectBySlug(slug: string) {
 export async function getSubjectById(id: number) {
   const db = await getDb();
   if (!db) return undefined;
+  await ensureRequiredSubjects();
   const result = await db.select().from(subjects).where(eq(subjects.id, id)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  const subject = result.length > 0 ? result[0] : undefined;
+  if (!subject || !REQUIRED_SUBJECT_SLUGS.includes(subject.slug)) return undefined;
+  return subject;
 }
 
 // ===== Coursewares =====

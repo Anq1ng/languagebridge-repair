@@ -29,3 +29,6 @@
 - [x] Fix: Enable database, server, and user capabilities so deployed OAuth login has DATABASE_URL and session support
 - [x] Fix: Remove duplicate Home page authentication declaration introduced during capability upgrade
 - [x] Verify: Database migration, TypeScript check, unit tests, and production build all pass after login and PDF fixes
+- [x] Add subjects: Physics, Chemistry, Biology, Calculus BC to the Subject section
+- [x] Ensure upload form can select Physics, Chemistry, Biology, and Calculus BC for uploaded files
+- [x] Verify subject list and courseware upload tests cover the four required subjects

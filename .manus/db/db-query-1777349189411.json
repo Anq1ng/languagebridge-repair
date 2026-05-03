@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `subjects` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`slug` varchar(64) NOT NULL,\n\t`nameEn` varchar(128) NOT NULL,\n\t`nameCn` varchar(128) NOT NULL,\n\t`descriptionEn` text,\n\t`descriptionCn` text,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `subjects_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `subjects_slug_unique` UNIQUE(`slug`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4BkR9eqKMnZ1qmi.root --database e9M6hMYQUQFz9VNYMA4bw3 --execute CREATE TABLE `subjects` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`slug` varchar(64) NOT NULL,\n\t`nameEn` varchar(128) NOT NULL,\n\t`nameCn` varchar(128) NOT NULL,\n\t`descriptionEn` text,\n\t`descriptionCn` text,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `subjects_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `subjects_slug_unique` UNIQUE(`slug`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1624
+}

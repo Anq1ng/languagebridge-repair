@@ -1,0 +1,25 @@
+# Project TODO
+
+- [x] Database schema: subjects table with predefined subjects
+- [x] Database schema: coursewares table with file metadata, S3 key, uploader info
+- [x] Backend: tRPC route for listing subjects
+- [x] Backend: tRPC route for listing coursewares (with subject filter and search)
+- [x] Backend: tRPC route for getting single courseware detail
+- [x] Backend: tRPC route for uploading courseware (protected, file to S3 + metadata to DB)
+- [x] Frontend: Global navigation with login/logout
+- [x] Frontend: Home page with dynamic data from DB (no hardcoded data)
+- [x] Frontend: Subjects page with subject filter and keyword search
+- [x] Frontend: Upload page (login-protected, file upload to S3)
+- [x] Frontend: Courseware detail page with PDF inline preview and download for other formats
+- [x] Frontend: Courseware cards showing uploader, upload time, file type, subject
+- [x] Auth: Manus OAuth login/register flow
+- [x] Auth: Protect upload route - redirect to login if not authenticated
+- [x] Storage: All files stored in S3, accessed via /manus-storage/ path
+- [x] Remove all hardcoded sample data
+- [x] Fix: Add server-side upload validation for file types and subject ID existence
+- [x] Fix: Reduce client-side file size limit to account for base64 encoding overhead (max ~30MB actual file)
+- [x] Fix: Auto-redirect unauthenticated users on /upload to OAuth login with return path
+- [x] Verify: Manus OAuth first sign-in auto-registers users (built-in behavior)
+- [x] Fix: Download links now properly redirect to S3 with target="_blank"
+- [x] Fix: Delete courseware functionality implemented with authorization checks
+- [x] Fix: Improved error handling with TRPCError for better user feedback

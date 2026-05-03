@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO `subjects` (`slug`, `nameEn`, `nameCn`, `descriptionEn`, `descriptionCn`) VALUES\n('chemistry', 'Chemistry', '化学', 'Explore molecular structures, reactions, and chemical principles.', '探索分子结构、反应和化学原理。'),\n('physics', 'Physics', '物理', 'Understand mechanics, thermodynamics, and quantum physics.', '理解力学、热力学和量子物理。'),\n('mathematics', 'Mathematics', '数学', 'Master calculus, algebra, and statistics.', '掌握微积分、代数和统计学。'),\n('biology', 'Biology', '生物', 'Discover cell biology, genetics, and ecology.', '发现细胞生物学、遗传学和生态学。'),\n('computer-science', 'Computer Science', '计算机科学', 'Learn programming, algorithms, and data structures.', '学习编程、算法和数据结构。'),\n('economics', 'Economics', '经济学', 'Study micro and macroeconomics with case studies.', '通过案例研究学习微观和宏观经济学。');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4BkR9eqKMnZ1qmi.root --database e9M6hMYQUQFz9VNYMA4bw3 --execute INSERT INTO `subjects` (`slug`, `nameEn`, `nameCn`, `descriptionEn`, `descriptionCn`) VALUES\n('chemistry', 'Chemistry', '化学', 'Explore molecular structures, reactions, and chemical principles.', '探索分子结构、反应和化学原理。'),\n('physics', 'Physics', '物理', 'Understand mechanics, thermodynamics, and quantum physics.', '理解力学、热力学和量子物理。'),\n('mathematics', 'Mathematics', '数学', 'Master calculus, algebra, and statistics.', '掌握微积分、代数和统计学。'),\n('biology', 'Biology', '生物', 'Discover cell biology, genetics, and ecology.', '发现细胞生物学、遗传学和生态学。'),\n('computer-science', 'Computer Science', '计算机科学', 'Learn programming, algorithms, and data structures.', '学习编程、算法和数据结构。'),\n('economics', 'Economics', '经济学', 'Study micro and macroeconomics with case studies.', '通过案例研究学习微观和宏观经济学。');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1659
+}

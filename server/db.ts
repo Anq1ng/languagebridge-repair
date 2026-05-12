@@ -124,10 +124,25 @@ export const REQUIRED_SUBJECTS: InsertSubject[] = [
 
 const REQUIRED_SUBJECT_SLUGS = REQUIRED_SUBJECTS.map((subject) => subject.slug);
 
-function orderRequiredSubjects<T extends { slug: string }>(subjectList: T[]): T[] {
-  return REQUIRED_SUBJECT_SLUGS
+function orderSubjects<T extends { slug: string; nameEn: string }>(subjectList: T[]): T[] {
+  const required = REQUIRED_SUBJECT_SLUGS
     .map((slug) => subjectList.find((subject) => subject.slug === slug))
     .filter((subject): subject is T => Boolean(subject));
+  const custom = subjectList
+    .filter((subject) => !REQUIRED_SUBJECT_SLUGS.includes(subject.slug))
+    .sort((a, b) => a.nameEn.localeCompare(b.nameEn));
+  return [...required, ...custom];
+}
+
+export function slugifySubjectName(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
 }
 
 export async function ensureRequiredSubjects() {
@@ -148,13 +163,32 @@ export async function getAllSubjects() {
   if (!db) return [];
   await ensureRequiredSubjects();
   const subjectList = await db.select().from(subjects);
-  return orderRequiredSubjects(subjectList);
+  return orderSubjects(subjectList);
+}
+
+export async function createSubject(data: Omit<InsertSubject, "slug"> & { slug?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await ensureRequiredSubjects();
+
+  const slug = data.slug?.trim() || slugifySubjectName(data.nameEn);
+  if (!slug) {
+    throw new Error("Subject name must produce a valid slug");
+  }
+
+  const result = await db.insert(subjects).values({
+    slug,
+    nameEn: data.nameEn.trim(),
+    nameCn: data.nameCn.trim(),
+    descriptionEn: data.descriptionEn || null,
+    descriptionCn: data.descriptionCn || null,
+  });
+  return result[0].insertId;
 }
 
 export async function getSubjectBySlug(slug: string) {
   const db = await getDb();
   if (!db) return undefined;
-  if (!REQUIRED_SUBJECT_SLUGS.includes(slug)) return undefined;
   await ensureRequiredSubjects();
   const result = await db.select().from(subjects).where(eq(subjects.slug, slug)).limit(1);
   return result.length > 0 ? result[0] : undefined;
@@ -165,12 +199,12 @@ export async function getSubjectById(id: number) {
   if (!db) return undefined;
   await ensureRequiredSubjects();
   const result = await db.select().from(subjects).where(eq(subjects.id, id)).limit(1);
-  const subject = result.length > 0 ? result[0] : undefined;
-  if (!subject || !REQUIRED_SUBJECT_SLUGS.includes(subject.slug)) return undefined;
-  return subject;
+  return result.length > 0 ? result[0] : undefined;
 }
 
 // ===== Coursewares =====
+
+type CoursewareStatus = "pending" | "approved" | "rejected";
 
 export async function createCourseware(data: InsertCourseware) {
   const db = await getDb();
@@ -186,26 +220,36 @@ export async function getCoursewareById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getApprovedCoursewareById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(coursewares)
+    .where(and(eq(coursewares.id, id), eq(coursewares.status, "approved")))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
 export async function listCoursewares(options: {
   subjectId?: number;
   search?: string;
   limit?: number;
   offset?: number;
+  status?: CoursewareStatus;
 }) {
   const db = await getDb();
   if (!db) return { items: [], total: 0 };
 
-  const conditions = [];
+  const conditions = [eq(coursewares.status, options.status || "approved")];
   if (options.subjectId) {
     conditions.push(eq(coursewares.subjectId, options.subjectId));
   }
   if (options.search) {
-    conditions.push(
-      like(coursewares.titleEn, `%${options.search}%`)
-    );
+    conditions.push(like(coursewares.titleEn, `%${options.search}%`));
   }
 
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+  const whereClause = and(...conditions);
 
   const [items, countResult] = await Promise.all([
     db
@@ -230,6 +274,7 @@ export async function getRecentCoursewares(limit: number = 6) {
   return db
     .select()
     .from(coursewares)
+    .where(eq(coursewares.status, "approved"))
     .orderBy(desc(coursewares.createdAt))
     .limit(limit);
 }
@@ -240,8 +285,43 @@ export async function getSubjectCoursewareCount(subjectId: number) {
   const result = await db
     .select({ count: sql<number>`count(*)` })
     .from(coursewares)
-    .where(eq(coursewares.subjectId, subjectId));
+    .where(and(eq(coursewares.subjectId, subjectId), eq(coursewares.status, "approved")));
   return result[0]?.count || 0;
+}
+
+export async function updateCoursewareMetadata(id: number, data: {
+  titleEn: string;
+  titleCn?: string | null;
+  descriptionEn?: string | null;
+  descriptionCn?: string | null;
+  subjectId: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(coursewares)
+    .set({
+      titleEn: data.titleEn,
+      titleCn: data.titleCn || null,
+      descriptionEn: data.descriptionEn || null,
+      descriptionCn: data.descriptionCn || null,
+      subjectId: data.subjectId,
+    })
+    .where(eq(coursewares.id, id));
+}
+
+export async function setCoursewareReviewStatus(id: number, status: CoursewareStatus, reviewerName: string, rejectionReason?: string | null) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(coursewares)
+    .set({
+      status,
+      reviewedAt: new Date(),
+      reviewedBy: reviewerName,
+      rejectionReason: status === "rejected" ? rejectionReason || null : null,
+    })
+    .where(eq(coursewares.id, id));
 }
 
 export async function deleteCourseware(id: number) {

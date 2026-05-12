@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { Readable } from "stream";
 import { getCoursewareById } from "../db";
 import { storageGetSignedUrl } from "../storage";
+import { isAdminModeRequest } from "../adminMode";
 
 const CONTENT_TYPE_BY_EXTENSION: Record<string, string> = {
   pdf: "application/pdf",
@@ -49,6 +50,11 @@ async function streamCoursewareFile(
 
   const courseware = await getCoursewareById(coursewareId);
   if (!courseware) {
+    res.status(404).send("Courseware not found");
+    return;
+  }
+
+  if (courseware.status !== "approved" && !isAdminModeRequest(req)) {
     res.status(404).send("Courseware not found");
     return;
   }

@@ -32,3 +32,24 @@
 - [x] Add subjects: Physics, Chemistry, Biology, Calculus BC to the Subject section
 - [x] Ensure upload form can select Physics, Chemistry, Biology, and Calculus BC for uploaded files
 - [x] Verify subject list and courseware upload tests cover the four required subjects
+- [x] Add administrator login entry next to normal login using secure password ijtr
+- [x] Add administrator mode state with a dedicated exit administrator mode action
+- [x] Restrict non-admin users to viewing, downloading, and uploading only; hide or disable edit and delete actions
+- [x] Change regular uploads to enter pending review status and keep them hidden from public subject/courseware lists until approved
+- [x] Add administrator review page for viewing pending files
+- [x] Allow administrators to approve or reject pending files
+- [x] Allow administrators to edit pending file metadata before review decision
+- [x] Allow administrators to add new subjects from administrator mode
+- [x] Ensure newly added administrator subjects become selectable in upload and visible in the Subject section
+- [x] Ensure administrators retain full management capabilities for visible and pending courseware
+- [x] Add backend validation and tests for admin password, review status filtering, approval/rejection, admin-only edit/delete permissions, and subject creation
+- [x] Add administrator login entry next to normal login using secure password ijtr
+- [x] Add administrator mode state with a dedicated exit administrator mode action
+- [x] Restrict non-admin users to viewing, downloading, and uploading only; hide or disable edit and delete actions
+- [x] Change regular uploads to enter pending review status and keep them hidden from public subject/courseware lists until approved
+- [x] Add administrator review page for viewing pending files
+- [x] Allow administrators to approve or reject pending files
+- [x] Allow administrators to edit pending file metadata before review decision
+- [x] Ensure administrators retain full management capabilities for visible and pending courseware
+- [x] Add backend validation and tests for admin password, review status filtering, approval/rejection, and admin-only edit/delete permissions
+- [x] Configure administrator password through ADMIN_PASSWORD environment variable and verify it with a dedicated unit test

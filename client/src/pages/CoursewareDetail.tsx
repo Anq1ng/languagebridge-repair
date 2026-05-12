@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -20,7 +19,7 @@ export default function CoursewareDetail() {
   const params = useParams<{ id: string }>();
   const coursewareId = parseInt(params.id || "0");
   const [, navigate] = useLocation();
-  const { user } = useAuth();
+  const { data: adminSession } = trpc.admin.session.useQuery();
   const [deleting, setDeleting] = useState(false);
 
   const { data: courseware, isLoading } = trpc.coursewares.getById.useQuery(
@@ -40,7 +39,7 @@ export default function CoursewareDetail() {
     },
   });
   const subject = subjects?.find((s) => s.id === courseware?.subjectId);
-  const isOwner = user && courseware && (user.id === courseware.uploaderId || user.role === "admin");
+  const isAdminMode = Boolean(adminSession?.isAdminMode);
 
   const handleDelete = async () => {
     if (!courseware) return;
@@ -202,7 +201,7 @@ export default function CoursewareDetail() {
                       Download
                     </Button>
                   </a>
-                  {isOwner && (
+                  {isAdminMode && (
                     <Button
                       variant="destructive"
                       className="w-full gap-2"

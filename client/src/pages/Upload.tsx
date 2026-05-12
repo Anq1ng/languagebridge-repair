@@ -1,6 +1,5 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,23 +12,21 @@ import {
 } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
 import { trpc } from "@/lib/trpc";
-import { getLoginUrl } from "@/const";
 import {
   Upload as UploadIcon,
   FileText,
   X,
   CheckCircle,
   Loader2,
-  LogIn,
 } from "lucide-react";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { Link, useLocation } from "wouter";
 
 const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB to account for base64 encoding overhead
 
 export default function UploadPage() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { data: adminSession, isLoading: adminSessionLoading } = trpc.admin.session.useQuery();
   const { data: subjects } = trpc.subjects.list.useQuery();
   const [, navigate] = useLocation();
 
@@ -41,15 +38,22 @@ export default function UploadPage() {
   const [descriptionCn, setDescriptionCn] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadedStatus, setUploadedStatus] = useState<"pending" | "approved" | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadMutation = trpc.coursewares.upload.useMutation({
     onSuccess: (data) => {
       setUploadSuccess(true);
-      toast.success("Courseware uploaded successfully!");
-      setTimeout(() => {
-        navigate(`/courseware/${data.id}`);
-      }, 1500);
+      const status = data.status === "approved" ? "approved" : "pending";
+      setUploadedStatus(status);
+      if (status === "pending") {
+        toast.success("Courseware submitted for administrator review.");
+      } else {
+        toast.success("Courseware uploaded and published successfully!");
+        setTimeout(() => {
+          navigate(`/courseware/${data.id}`);
+        }, 1500);
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Upload failed. Please try again.");
@@ -141,22 +145,17 @@ export default function UploadPage() {
     }
   };
 
-  // Auto-redirect unauthenticated users to login with return path
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      window.location.href = getLoginUrl("/upload");
-    }
-  }, [authLoading, isAuthenticated]);
+  const isAdminMode = Boolean(adminSession?.isAdminMode);
 
-  // Show loading while checking auth or redirecting
-  if (authLoading || !isAuthenticated) {
+  // Show loading while checking administrator mode.
+  if (adminSessionLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
-            <p className="text-muted-foreground">Checking authentication...</p>
+            <p className="text-muted-foreground">Checking administrator mode...</p>
           </div>
         </div>
       </div>
@@ -171,8 +170,19 @@ export default function UploadPage() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <CheckCircle className="h-16 w-16 mx-auto text-green-500 mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Upload Successful!</h2>
-            <p className="text-muted-foreground">Redirecting to your courseware...</p>
+            <h2 className="text-2xl font-bold mb-2">
+              {uploadedStatus === "pending" ? "Submitted for Review" : "Upload Successful!"}
+            </h2>
+            <p className="text-muted-foreground">
+              {uploadedStatus === "pending"
+                ? "Your file is waiting for administrator approval and is not publicly visible yet."
+                : "Redirecting to your courseware..."}
+            </p>
+            {uploadedStatus === "pending" && (
+              <Link href="/subjects">
+                <Button className="mt-4">Back to Subjects</Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -187,7 +197,9 @@ export default function UploadPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Upload Courseware</h1>
           <p className="text-muted-foreground mt-2">
-            Share your course materials with the community. Upload PDF, PPT, or image files.
+            {isAdminMode
+              ? "Administrator uploads are published immediately."
+              : "Share your course materials with the community. New uploads enter administrator review before becoming public."}
           </p>
         </div>
 

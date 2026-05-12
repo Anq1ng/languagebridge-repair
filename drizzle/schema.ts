@@ -51,6 +51,10 @@ export const coursewares = mysqlTable("coursewares", {
   fileSize: int("fileSize").notNull(), // bytes
   uploaderId: int("uploaderId").notNull(),
   uploaderName: varchar("uploaderName", { length: 256 }),
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("approved").notNull(),
+  reviewedAt: timestamp("reviewedAt"),
+  reviewedBy: varchar("reviewedBy", { length: 256 }),
+  rejectionReason: text("rejectionReason"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

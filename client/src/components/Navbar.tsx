@@ -1,18 +1,48 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
-import { BookOpen, LogIn, LogOut, Upload, User } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { BookOpen, ClipboardCheck, LogIn, LogOut, Shield, Upload, User } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { toast } from "sonner";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const utils = trpc.useUtils();
+  const { data: adminSession } = trpc.admin.session.useQuery();
+  const adminLogin = trpc.admin.login.useMutation({
+    onSuccess: async () => {
+      await utils.admin.session.invalidate();
+      toast.success("Administrator mode enabled.");
+      setLocation("/admin/review");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Administrator login failed.");
+    },
+  });
+  const adminLogout = trpc.admin.logout.useMutation({
+    onSuccess: async () => {
+      await utils.admin.session.invalidate();
+      toast.success("Administrator mode exited.");
+      if (location.startsWith("/admin")) setLocation("/");
+    },
+  });
+
+  const isAdminMode = Boolean(adminSession?.isAdminMode);
 
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/subjects", label: "Subjects" },
     { href: "/upload", label: "Upload" },
+    ...(isAdminMode ? [{ href: "/admin/review", label: "Review" }] : []),
   ];
+
+  const handleAdminLogin = () => {
+    const password = window.prompt("Enter administrator password");
+    if (!password) return;
+    adminLogin.mutate({ password });
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
@@ -39,6 +69,40 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {isAdminMode ? (
+            <>
+              <div className="hidden md:flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                <Shield className="h-3.5 w-3.5" />
+                Admin mode
+              </div>
+              <Link href="/admin/review">
+                <Button size="sm" variant="secondary" className="gap-1">
+                  <ClipboardCheck className="h-4 w-4" />
+                  <span className="hidden sm:inline">Review</span>
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => adminLogout.mutate()}
+                disabled={adminLogout.isPending}
+              >
+                Exit Admin
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              onClick={handleAdminLogin}
+              disabled={adminLogin.isPending}
+            >
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Admin Login</span>
+            </Button>
+          )}
+
           {isAuthenticated ? (
             <>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">

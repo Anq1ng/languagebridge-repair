@@ -1,11 +1,25 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { appRouter } from "./routers";
-import { createCourseware } from "./db";
+import * as db from "./db";
 import type { TrpcContext } from "./_core/context";
+
+const adminModeState = vi.hoisted(() => ({ enabled: false }));
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
-// Mock the db module
+vi.mock("./adminMode", () => ({
+  verifyAdminPassword: vi.fn((password: string) => password === "ijtr"),
+  isAdminModeCookieValid: vi.fn(() => adminModeState.enabled),
+  setAdminModeCookie: vi.fn((res: { cookie?: (...args: unknown[]) => void }) => {
+    adminModeState.enabled = true;
+    res.cookie?.("lb_admin_mode", "signed-admin-cookie", expect.any(Object));
+  }),
+  clearAdminModeCookie: vi.fn((res: { clearCookie?: (...args: unknown[]) => void }) => {
+    adminModeState.enabled = false;
+    res.clearCookie?.("lb_admin_mode", expect.any(Object));
+  }),
+}));
+
 vi.mock("./db", () => ({
   getAllSubjects: vi.fn().mockResolvedValue([
     { id: 1, slug: "physics", nameEn: "Physics", nameCn: "物理", descriptionEn: "Physics desc", descriptionCn: "物理描述", createdAt: new Date() },
@@ -32,14 +46,18 @@ vi.mock("./db", () => ({
     return subjects.find((subject) => subject.id === id);
   }),
   listCoursewares: vi.fn().mockResolvedValue({ items: [], total: 0 }),
-  getCoursewareById: vi.fn().mockResolvedValue(undefined),
+  getCoursewareById: vi.fn().mockResolvedValue({ id: 1, subjectId: 4, titleEn: "Pending", status: "pending" }),
+  getApprovedCoursewareById: vi.fn().mockResolvedValue(undefined),
   createCourseware: vi.fn().mockResolvedValue(1),
   getRecentCoursewares: vi.fn().mockResolvedValue([]),
   getSubjectCoursewareCount: vi.fn().mockResolvedValue(0),
+  updateCoursewareMetadata: vi.fn().mockResolvedValue(undefined),
+  setCoursewareReviewStatus: vi.fn().mockResolvedValue(undefined),
   deleteCourseware: vi.fn().mockResolvedValue(undefined),
+  createSubject: vi.fn().mockResolvedValue(5),
+  slugifySubjectName: vi.fn((name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")),
 }));
 
-// Mock storage
 vi.mock("./storage", () => ({
   storagePut: vi.fn().mockResolvedValue({ key: "test-key", url: "/manus-storage/test-key" }),
 }));
@@ -48,7 +66,7 @@ function createPublicContext(): TrpcContext {
   return {
     user: null,
     req: { protocol: "https", headers: {} } as TrpcContext["req"],
-    res: { clearCookie: vi.fn() } as unknown as TrpcContext["res"],
+    res: { cookie: vi.fn(), clearCookie: vi.fn() } as unknown as TrpcContext["res"],
   };
 }
 
@@ -68,113 +86,103 @@ function createAuthContext(): TrpcContext {
   return {
     user,
     req: { protocol: "https", headers: {} } as TrpcContext["req"],
-    res: { clearCookie: vi.fn() } as unknown as TrpcContext["res"],
+    res: { cookie: vi.fn(), clearCookie: vi.fn() } as unknown as TrpcContext["res"],
   };
 }
 
+function createAdminContext(): TrpcContext {
+  adminModeState.enabled = true;
+  return createAuthContext();
+}
+
+beforeEach(() => {
+  adminModeState.enabled = false;
+  vi.clearAllMocks();
+});
+
+describe("administrator mode", () => {
+  it("accepts the configured administrator password", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.admin.login({ password: "ijtr" });
+
+    expect(result).toEqual({ success: true, isAdminMode: true });
+    expect(adminModeState.enabled).toBe(true);
+  });
+
+  it("rejects an incorrect administrator password", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(caller.admin.login({ password: "wrong" })).rejects.toThrow("Incorrect administrator password");
+  });
+});
+
 describe("subjects", () => {
-  it("lists all subjects with courseware counts", async () => {
+  it("lists all subjects with approved courseware counts", async () => {
     const ctx = createPublicContext();
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.subjects.list();
 
     expect(result).toHaveLength(4);
-    expect(result.map((subject) => subject.slug)).toEqual([
-      "physics",
-      "chemistry",
-      "biology",
-      "calculus-bc",
-    ]);
-    expect(result[0]).toMatchObject({
-      id: 1,
-      slug: "physics",
-      nameEn: "Physics",
-      nameCn: "物理",
-    });
-    expect(result[3]).toMatchObject({
-      id: 4,
-      slug: "calculus-bc",
-      nameEn: "Calculus BC",
-      nameCn: "微积分 BC",
-    });
+    expect(result.map((subject) => subject.slug)).toEqual(["physics", "chemistry", "biology", "calculus-bc"]);
+    expect(result[0]).toMatchObject({ id: 1, slug: "physics", nameEn: "Physics", nameCn: "物理" });
+    expect(result[3]).toMatchObject({ id: 4, slug: "calculus-bc", nameEn: "Calculus BC", nameCn: "微积分 BC" });
     expect(result[0]).toHaveProperty("coursewareCount");
   });
 
-  it("gets a subject by slug", async () => {
-    const ctx = createPublicContext();
+  it("allows administrators to add new subjects", async () => {
+    const ctx = createAdminContext();
     const caller = appRouter.createCaller(ctx);
 
-    const result = await caller.subjects.getBySlug({ slug: "calculus-bc" });
-
-    expect(result).toMatchObject({
-      id: 4,
-      slug: "calculus-bc",
-      nameEn: "Calculus BC",
+    const result = await caller.subjects.create({
+      nameEn: "Computer Science",
+      nameCn: "计算机科学",
+      descriptionEn: "CS courseware",
+      descriptionCn: "计算机科学资料",
     });
+
+    expect(result).toEqual({ id: 5, slug: "computer-science" });
+    expect(db.createSubject).toHaveBeenCalledWith(expect.objectContaining({ nameEn: "Computer Science", slug: "computer-science" }));
   });
 
-  it("returns undefined for non-existent slug", async () => {
+  it("blocks non-admin subject creation", async () => {
     const ctx = createPublicContext();
     const caller = appRouter.createCaller(ctx);
 
-    const result = await caller.subjects.getBySlug({ slug: "nonexistent" });
-
-    expect(result).toBeUndefined();
+    await expect(caller.subjects.create({ nameEn: "Art", nameCn: "艺术" })).rejects.toThrow("Administrator mode is required");
   });
 });
 
 describe("coursewares", () => {
-  it("lists coursewares (public access)", async () => {
+  it("lists only approved coursewares for public access", async () => {
     const ctx = createPublicContext();
     const caller = appRouter.createCaller(ctx);
 
-    const result = await caller.coursewares.list({});
+    const result = await caller.coursewares.list({ subjectId: 4 });
 
     expect(result).toMatchObject({ items: [], total: 0 });
+    expect(db.listCoursewares).toHaveBeenCalledWith({ subjectId: 4 });
   });
 
-  it("lists recent coursewares", async () => {
+  it("uses approved-only lookup for public detail access", async () => {
     const ctx = createPublicContext();
     const caller = appRouter.createCaller(ctx);
 
-    const result = await caller.coursewares.recent({ limit: 6 });
-
-    expect(Array.isArray(result)).toBe(true);
-  });
-
-  it("gets courseware by id", async () => {
-    const ctx = createPublicContext();
-    const caller = appRouter.createCaller(ctx);
-
-    const result = await caller.coursewares.getById({ id: 999 });
+    const result = await caller.coursewares.getById({ id: 1 });
 
     expect(result).toBeUndefined();
+    expect(db.getApprovedCoursewareById).toHaveBeenCalledWith(1);
   });
 
-  it("requires authentication for upload", async () => {
+  it("allows public uploads but stores them as pending review", async () => {
     const ctx = createPublicContext();
-    const caller = appRouter.createCaller(ctx);
-
-    await expect(
-      caller.coursewares.upload({
-        titleEn: "Test",
-        subjectId: 1,
-        fileName: "test.pdf",
-        fileType: "pdf",
-        fileSize: 1024,
-        fileBase64: "dGVzdA==",
-      })
-    ).rejects.toThrow();
-  });
-
-  it("allows authenticated user to upload", async () => {
-    const ctx = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.coursewares.upload({
-      titleEn: "Test Courseware",
-      titleCn: "测试课件",
+      titleEn: "Pending Courseware",
       subjectId: 4,
       fileName: "test.pdf",
       fileType: "pdf",
@@ -182,21 +190,61 @@ describe("coursewares", () => {
       fileBase64: "dGVzdA==",
     });
 
-    expect(result).toMatchObject({
-      id: 1,
-      fileUrl: "/api/coursewares/1/file",
-      downloadUrl: "/api/coursewares/1/download",
-      storageUrl: "/manus-storage/test-key",
-    });
-    expect(createCourseware).toHaveBeenCalledWith(expect.objectContaining({ subjectId: 4 }));
+    expect(result).toMatchObject({ id: 1, status: "pending", fileUrl: "/api/coursewares/1/file" });
+    expect(db.createCourseware).toHaveBeenCalledWith(expect.objectContaining({ subjectId: 4, status: "pending", uploaderName: "Anonymous" }));
   });
 
-  it("requires authentication for delete", async () => {
-    const ctx = createPublicContext();
+  it("automatically approves administrator uploads", async () => {
+    const ctx = createAdminContext();
     const caller = appRouter.createCaller(ctx);
 
-    await expect(
-      caller.coursewares.delete({ id: 1 })
-    ).rejects.toThrow();
+    const result = await caller.coursewares.upload({
+      titleEn: "Approved Admin Upload",
+      subjectId: 1,
+      fileName: "admin.pdf",
+      fileType: "pdf",
+      fileSize: 1024,
+      fileBase64: "dGVzdA==",
+    });
+
+    expect(result.status).toBe("approved");
+    expect(db.createCourseware).toHaveBeenCalledWith(expect.objectContaining({ status: "approved" }));
+  });
+
+  it("lets administrators list pending files", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    await caller.coursewares.pending({ limit: 20, offset: 0 });
+
+    expect(db.listCoursewares).toHaveBeenCalledWith({ status: "pending", limit: 20, offset: 0 });
+  });
+
+  it("allows administrators to edit pending metadata", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    await caller.coursewares.update({ id: 1, titleEn: "Edited", subjectId: 2 });
+
+    expect(db.updateCoursewareMetadata).toHaveBeenCalledWith(1, expect.objectContaining({ titleEn: "Edited", subjectId: 2 }));
+  });
+
+  it("allows administrators to approve and reject pending files", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    await caller.coursewares.approve({ id: 1 });
+    await caller.coursewares.reject({ id: 1, reason: "Not relevant" });
+
+    expect(db.setCoursewareReviewStatus).toHaveBeenCalledWith(1, "approved", "Test User");
+    expect(db.setCoursewareReviewStatus).toHaveBeenCalledWith(1, "rejected", "Test User", "Not relevant");
+  });
+
+  it("blocks non-admin edit and delete operations", async () => {
+    const ctx = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(caller.coursewares.update({ id: 1, titleEn: "No", subjectId: 1 })).rejects.toThrow("Administrator mode is required");
+    await expect(caller.coursewares.delete({ id: 1 })).rejects.toThrow("Administrator mode is required");
   });
 });

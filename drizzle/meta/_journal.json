@@ -15,6 +15,13 @@
       "when": 1777349161868,
       "tag": "0001_skinny_slayback",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1778556117412,
+      "tag": "0002_magical_swordsman",
+      "breakpoints": true
     }
   ]
 }

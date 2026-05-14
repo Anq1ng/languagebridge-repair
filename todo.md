@@ -53,3 +53,4 @@
 - [x] Ensure administrators retain full management capabilities for visible and pending courseware
 - [x] Add backend validation and tests for admin password, review status filtering, approval/rejection, and admin-only edit/delete permissions
 - [x] Configure administrator password through ADMIN_PASSWORD environment variable and verify it with a dedicated unit test
+- [x] Replace navbar logo with user-provided image (12.png)

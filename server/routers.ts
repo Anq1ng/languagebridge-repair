@@ -18,6 +18,8 @@ import {
   setCoursewareReviewStatus,
   createSubject,
   slugifySubjectName,
+  getAllAboutContent,
+  updateAboutContent,
 } from "./db";
 import { storagePut } from "./storage";
 import { TRPCError } from "@trpc/server";
@@ -422,6 +424,33 @@ export const appRouter = router({
           });
         }
         await deleteCourseware(input.id);
+        return { success: true };
+      }),
+  }),
+
+  about: router({
+    getAll: publicProcedure.query(async () => {
+      return getAllAboutContent();
+    }),
+
+    update: publicProcedure
+      .input(
+        z.object({
+          slideKey: z.string(),
+          titleEn: z.string().min(1),
+          titleZh: z.string().min(1),
+          bodyEn: z.string().min(1),
+          bodyZh: z.string().min(1),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        requireAdminMode(ctx);
+        await updateAboutContent(input.slideKey, {
+          titleEn: input.titleEn,
+          titleZh: input.titleZh,
+          bodyEn: input.bodyEn,
+          bodyZh: input.bodyZh,
+        });
         return { success: true };
       }),
   }),

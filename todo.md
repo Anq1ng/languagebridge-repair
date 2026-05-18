@@ -74,3 +74,9 @@
 - [x] Add About The LanguageBridge section below hero on Home page (Challenge, Solution, Key Features, Who It's For, Our Goal) with EN/ZH translations
 - [x] Redesign About section as horizontal sliding paginated cards (aspect ratio similar to hero), change Challenge section from yellow to blue color scheme
 - [x] Fix AboutSlider: other slides show empty content, switch from translateX to absolute positioning approach
+- [x] Add about_content table to DB schema and push migration
+- [x] Add about.getAll and about.update tRPC procedures (admin-only update)
+- [x] Update AboutSlider to fetch content from DB with fallback to hardcoded defaults
+- [x] Add About content editor panel in AdminReview page for admins to edit and save each slide
+- [x] Fix AdminReview About editor state initialization so unchanged fields retain existing DB values
+- [x] Make Features/Who slides also render DB body text (currently hardcoded card items)

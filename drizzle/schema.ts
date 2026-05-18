@@ -61,3 +61,20 @@ export const coursewares = mysqlTable("coursewares", {
 
 export type Courseware = typeof coursewares.$inferSelect;
 export type InsertCourseware = typeof coursewares.$inferInsert;
+
+/**
+ * About content table - editable content for the About slider on the homepage
+ * Each row represents one slide (challenge, solution, features, who, goal)
+ */
+export const aboutContent = mysqlTable("about_content", {
+  id: int("id").autoincrement().primaryKey(),
+  slideKey: varchar("slideKey", { length: 64 }).notNull().unique(), // challenge | solution | features | who | goal
+  titleEn: varchar("titleEn", { length: 256 }).notNull(),
+  titleZh: varchar("titleZh", { length: 256 }).notNull(),
+  bodyEn: text("bodyEn").notNull(),
+  bodyZh: text("bodyZh").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AboutContent = typeof aboutContent.$inferSelect;
+export type InsertAboutContent = typeof aboutContent.$inferInsert;

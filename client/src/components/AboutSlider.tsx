@@ -16,15 +16,31 @@ import {
 } from "lucide-react";
 import type { Language } from "@/contexts/LanguageContext";
 
+type DbAboutRow = {
+  id: number;
+  slideKey: string;
+  titleEn: string;
+  titleZh: string;
+  bodyEn: string;
+  bodyZh: string;
+  updatedAt: Date;
+};
+
 interface Props {
   language: Language;
+  dbContent?: DbAboutRow[];
 }
 
-export default function AboutSlider({ language }: Props) {
+export default function AboutSlider({ language, dbContent }: Props) {
   const [current, setCurrent] = useState(0);
   const touchStartX = useRef<number | null>(null);
 
   const zh = language === "zh";
+
+  // Helper: get DB content for a slide key, falling back to hardcoded defaults
+  function db(key: string): DbAboutRow | undefined {
+    return dbContent?.find((r: DbAboutRow) => r.slideKey === key);
+  }
 
   const slides = [
     // Slide 0 — The Challenge
@@ -36,11 +52,9 @@ export default function AboutSlider({ language }: Props) {
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <AlertTriangle className="h-6 w-6 text-primary" />
           </div>
-          <h3 className="text-2xl font-bold">{zh ? "我们面临的挑战" : "The Challenge"}</h3>
+          <h3 className="text-2xl font-bold">{zh ? (db("challenge")?.titleZh || "我们面临的挑战") : (db("challenge")?.titleEn || "The Challenge")}</h3>
           <p className="text-muted-foreground leading-relaxed text-base">
-            {zh
-              ? "每年都有新的交换生加入我们学校。他们大多英语流利，但几乎不懂中文。尽管老师会使用英文幻灯片和资料，但主要讲解往往是中文。虽然这些学生考试时不需要掌握每个细节，但当他们完全跨不过课堂内容时，就很难参与课堂活动，也很难真正融入我们的学校社区。"
-              : "Every year, new exchange students join our school. Most have strong English skills but almost no Chinese. While teachers use English slides and materials, the main explanations are often in Chinese. Although these students don't need to master every detail for exams, when they can't follow the lessons at all, it becomes difficult for them to participate in class or feel included in our school community."}
+            {zh ? (db("challenge")?.bodyZh || "每年都有新的交换生加入我们学校。他们大多英语流利，但几乎不懂中文。尽管老师会使用英文幻灯片和资料，但主要讲解往往是中文。虽然这些学生考试时不需要掌握每个细节，但当他们完全跨不过课堂内容时，就很难参与课堂活动，也很难真正融入我们的学校社区。") : (db("challenge")?.bodyEn || "Every year, new exchange students join our school. Most have strong English skills but almost no Chinese. While teachers use English slides and materials, the main explanations are often in Chinese. Although these students don't need to master every detail for exams, when they can't follow the lessons at all, it becomes difficult for them to participate in class or feel included in our school community.")}
           </p>
         </div>
       ),
@@ -54,11 +68,9 @@ export default function AboutSlider({ language }: Props) {
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <Lightbulb className="h-6 w-6 text-primary" />
           </div>
-          <h3 className="text-2xl font-bold">{zh ? "我们的解决方案" : "Our Solution"}</h3>
+          <h3 className="text-2xl font-bold">{zh ? (db("solution")?.titleZh || "我们的解决方案") : (db("solution")?.titleEn || "Our Solution")}</h3>
           <p className="text-muted-foreground leading-relaxed text-base">
-            {zh
-              ? "The LanguageBridge 是一个协作平台，老师和同学共同努力让双语课程内容更清晰。我们在原始资料旁提供清晰的英文讲解、注释和 AI 辅助翻译工具，让交换生能够更好地理解所学内容，更深入地参与学习。"
-              : "The LanguageBridge is a collaborative platform where teachers and students work together to make bilingual course content clearer. We provide clear English explanations, annotations, and AI-powered translation tools alongside the original materials — so exchange students can better understand what's being taught and feel more connected to the learning experience."}
+            {zh ? (db("solution")?.bodyZh || "The LanguageBridge 是一个协作平台，老师和同学共同努力让双语课程内容更清晰。我们在原始资料旁提供清晰的英文讲解、注释和 AI 辅助翻译工具，让交换生能够更好地理解所学内容，更深入地参与学习。") : (db("solution")?.bodyEn || "The LanguageBridge is a collaborative platform where teachers and students work together to make bilingual course content clearer. We provide clear English explanations, annotations, and AI-powered translation tools alongside the original materials — so exchange students can better understand what's being taught and feel more connected to the learning experience.")}
           </p>
         </div>
       ),
@@ -73,23 +85,29 @@ export default function AboutSlider({ language }: Props) {
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
-            <h3 className="text-2xl font-bold">{zh ? "主要功能" : "Key Features"}</h3>
+            <h3 className="text-2xl font-bold">{zh ? (db("features")?.titleZh || "主要功能") : (db("features")?.titleEn || "Key Features")}</h3>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
-            {[
-              { icon: <FileText className="h-5 w-5 text-primary" />, title: zh ? "清晰的英文讲解" : "Clear English Explanations" },
-              { icon: <MessageSquare className="h-5 w-5 text-primary" />, title: zh ? "协作评论" : "Collaborative Comments" },
-              { icon: <Bot className="h-5 w-5 text-primary" />, title: zh ? "AI 翻译与总结" : "AI Translation & Summary" },
-              { icon: <LayoutGrid className="h-5 w-5 text-primary" />, title: zh ? "按科目分类" : "Organized by Subject" },
-            ].map((f, i) => (
-              <div key={i} className="rounded-xl border bg-background p-5 flex flex-col items-center gap-3 text-center">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  {f.icon}
+          {db("features")?.bodyEn ? (
+            <p className="text-muted-foreground leading-relaxed text-base text-center max-w-2xl mx-auto">
+              {zh ? (db("features")?.bodyZh || "") : (db("features")?.bodyEn || "")}
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
+              {[
+                { icon: <FileText className="h-5 w-5 text-primary" />, title: zh ? "清晰的英文讲解" : "Clear English Explanations" },
+                { icon: <MessageSquare className="h-5 w-5 text-primary" />, title: zh ? "协作评论" : "Collaborative Comments" },
+                { icon: <Bot className="h-5 w-5 text-primary" />, title: zh ? "AI 翻译与总结" : "AI Translation & Summary" },
+                { icon: <LayoutGrid className="h-5 w-5 text-primary" />, title: zh ? "按科目分类" : "Organized by Subject" },
+              ].map((f, i) => (
+                <div key={i} className="rounded-xl border bg-background p-5 flex flex-col items-center gap-3 text-center">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    {f.icon}
+                  </div>
+                  <h4 className="font-semibold text-sm">{f.title}</h4>
                 </div>
-                <h4 className="font-semibold text-sm">{f.title}</h4>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       ),
     },
@@ -103,23 +121,29 @@ export default function AboutSlider({ language }: Props) {
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Users className="h-6 w-6 text-primary" />
             </div>
-            <h3 className="text-2xl font-bold">{zh ? "适合哪些人" : "Who It's For"}</h3>
+            <h3 className="text-2xl font-bold">{zh ? (db("who")?.titleZh || "适合哪些人") : (db("who")?.titleEn || "Who It's For")}</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 flex-1">
-            {[
-              { icon: <GraduationCap className="h-6 w-6 text-primary" />, title: zh ? "交换生" : "Exchange Students", desc: zh ? "尤其是那些对中文讲解感到困难的同学" : "Especially those who struggle with Chinese explanations" },
-              { icon: <BookOpen className="h-6 w-6 text-primary" />, title: zh ? "老师" : "Teachers", desc: zh ? "分享更清晰的资料，支持所有学生" : "A space to share clearer materials and support all learners" },
-              { icon: <Users className="h-6 w-6 text-primary" />, title: zh ? "所有同学" : "All Students", desc: zh ? "任何希望贡献讲解或用英文复习内容的同学" : "Anyone who wants to contribute explanations or review content in English" },
-            ].map((u, i) => (
-              <div key={i} className="rounded-xl border bg-background p-6 text-center flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  {u.icon}
+          {db("who")?.bodyEn ? (
+            <p className="text-muted-foreground leading-relaxed text-base text-center max-w-2xl mx-auto">
+              {zh ? (db("who")?.bodyZh || "") : (db("who")?.bodyEn || "")}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 flex-1">
+              {[
+                { icon: <GraduationCap className="h-6 w-6 text-primary" />, title: zh ? "交换生" : "Exchange Students", desc: zh ? "尤其是那些对中文讲解感到困难的同学" : "Especially those who struggle with Chinese explanations" },
+                { icon: <BookOpen className="h-6 w-6 text-primary" />, title: zh ? "老师" : "Teachers", desc: zh ? "分享更清晰的资料，支持所有学生" : "A space to share clearer materials and support all learners" },
+                { icon: <Users className="h-6 w-6 text-primary" />, title: zh ? "所有同学" : "All Students", desc: zh ? "任何希望贡献讲解或用英文复习内容的同学" : "Anyone who wants to contribute explanations or review content in English" },
+              ].map((u, i) => (
+                <div key={i} className="rounded-xl border bg-background p-6 text-center flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    {u.icon}
+                  </div>
+                  <h4 className="font-bold">{u.title}</h4>
+                  <p className="text-sm text-muted-foreground">{u.desc}</p>
                 </div>
-                <h4 className="font-bold">{u.title}</h4>
-                <p className="text-sm text-muted-foreground">{u.desc}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       ),
     },
@@ -132,11 +156,9 @@ export default function AboutSlider({ language }: Props) {
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
             <Target className="h-6 w-6 text-primary" />
           </div>
-          <h3 className="text-2xl font-bold">{zh ? "我们的目标" : "Our Goal"}</h3>
+          <h3 className="text-2xl font-bold">{zh ? (db("goal")?.titleZh || "我们的目标") : (db("goal")?.titleEn || "Our Goal")}</h3>
           <p className="text-muted-foreground leading-relaxed text-base">
-            {zh
-              ? "我们相信，每一位学生都应该有机会理解课堂内容并感到被包容——无论其语言背景如何。通过让双语学习更易获取、更具协作性，我们希望为每个人创造一个更公平、更友好的学习环境。"
-              : "We believe every student deserves the chance to understand and feel included in class — no matter their language background. By making bilingual learning more accessible and collaborative, we hope to create a more equitable and welcoming environment for everyone."}
+            {zh ? (db("goal")?.bodyZh || "我们相信，每一位学生都应该有机会理解课堂内容并感到被包容——无论其语言背景如何。通过让双语学习更易获取、更具协作性，我们希望为每个人创造一个更公平、更友好的学习环境。") : (db("goal")?.bodyEn || "We believe every student deserves the chance to understand and feel included in class — no matter their language background. By making bilingual learning more accessible and collaborative, we hope to create a more equitable and welcoming environment for everyone.")}
           </p>
         </div>
       ),

@@ -57,6 +57,43 @@ export default function AdminReviewPage() {
     descriptionCn: "",
   });
 
+  // About content editing
+  const { data: aboutRows, isLoading: aboutLoading } = trpc.about.getAll.useQuery();
+  const [aboutEdits, setAboutEdits] = useState<Record<string, { titleEn: string; titleZh: string; bodyEn: string; bodyZh: string }>>({});
+  const [aboutSaving, setAboutSaving] = useState<Record<string, boolean>>({});
+  const updateAboutMutation = trpc.about.update.useMutation({
+    onSuccess: async (_, vars) => {
+      toast.success(language === "zh" ? `"${vars.slideKey}" 已保存。` : `"${vars.slideKey}" saved.`);
+      setAboutSaving((s) => ({ ...s, [vars.slideKey]: false }));
+      await utils.about.getAll.invalidate();
+    },
+    onError: (error, vars) => {
+      toast.error(error.message);
+      setAboutSaving((s) => ({ ...s, [vars.slideKey]: false }));
+    },
+  });
+
+  const getAboutEdit = (row: { slideKey: string; titleEn: string; titleZh: string; bodyEn: string; bodyZh: string }) => {
+    return aboutEdits[row.slideKey] || { titleEn: row.titleEn, titleZh: row.titleZh, bodyEn: row.bodyEn, bodyZh: row.bodyZh };
+  };
+
+  const setAboutField = (slideKey: string, field: string, value: string) => {
+    const row = aboutRows?.find((r) => r.slideKey === slideKey);
+    if (!row) return;
+    setAboutEdits((prev) => ({
+      ...prev,
+      [slideKey]: { ...getAboutEdit(row), [field]: value },
+    }));
+  };
+
+  const saveAbout = (slideKey: string) => {
+    const row = aboutRows?.find((r) => r.slideKey === slideKey);
+    if (!row) return;
+    const edit = getAboutEdit(row);
+    setAboutSaving((s) => ({ ...s, [slideKey]: true }));
+    updateAboutMutation.mutate({ slideKey, titleEn: edit.titleEn, titleZh: edit.titleZh, bodyEn: edit.bodyEn, bodyZh: edit.bodyZh });
+  };
+
   useEffect(() => {
     if (!adminLoading && adminSession && !adminSession.isAdminMode) {
       toast.error(language === "zh" ? "请先进入管理员模式。" : "Please enter administrator mode first.");
@@ -225,6 +262,63 @@ export default function AdminReviewPage() {
                 {language === "zh" ? "添加科目" : "Add Subject"}
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* About Content Editor */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {language === "zh" ? "编辑 About 内容" : "Edit About Content"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {aboutLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {(aboutRows || []).map((row) => {
+                  const edit = getAboutEdit(row);
+                  return (
+                    <div key={row.slideKey} className="border rounded-lg p-5 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-base capitalize">{row.slideKey}</h3>
+                        <Button
+                          size="sm"
+                          onClick={() => saveAbout(row.slideKey)}
+                          disabled={aboutSaving[row.slideKey]}
+                          className="gap-2"
+                        >
+                          {aboutSaving[row.slideKey] ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                          {language === "zh" ? "保存" : "Save"}
+                        </Button>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label>{language === "zh" ? "标题（英文）" : "Title (English)"}</Label>
+                          <Input value={edit.titleEn} onChange={(e) => setAboutField(row.slideKey, "titleEn", e.target.value)} />
+                        </div>
+                        <div>
+                          <Label>{language === "zh" ? "标题（中文）" : "Title (Chinese)"}</Label>
+                          <Input value={edit.titleZh} onChange={(e) => setAboutField(row.slideKey, "titleZh", e.target.value)} />
+                        </div>
+                        <div>
+                          <Label>{language === "zh" ? "正文（英文）" : "Body (English)"}</Label>
+                          <Textarea rows={4} value={edit.bodyEn} onChange={(e) => setAboutField(row.slideKey, "bodyEn", e.target.value)} />
+                        </div>
+                        <div>
+                          <Label>{language === "zh" ? "正文（中文）" : "Body (Chinese)"}</Label>
+                          <Textarea rows={4} value={edit.bodyZh} onChange={(e) => setAboutField(row.slideKey, "bodyZh", e.target.value)} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 

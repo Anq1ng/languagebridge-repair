@@ -1,6 +1,6 @@
 import { eq, like, desc, sql, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, subjects, coursewares, InsertCourseware, InsertSubject } from "../drizzle/schema";
+import { InsertUser, users, subjects, coursewares, InsertCourseware, InsertSubject, aboutContent } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -328,4 +328,31 @@ export async function deleteCourseware(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(coursewares).where(eq(coursewares.id, id));
+}
+
+// ===== About Content =====
+
+export async function getAllAboutContent() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(aboutContent).orderBy(aboutContent.id);
+}
+
+export async function updateAboutContent(slideKey: string, data: {
+  titleEn: string;
+  titleZh: string;
+  bodyEn: string;
+  bodyZh: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(aboutContent)
+    .set({
+      titleEn: data.titleEn,
+      titleZh: data.titleZh,
+      bodyEn: data.bodyEn,
+      bodyZh: data.bodyZh,
+    })
+    .where(eq(aboutContent.slideKey, slideKey));
 }

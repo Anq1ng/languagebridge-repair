@@ -21,6 +21,7 @@ export default function Home() {
   const { t, language } = useLanguage();
   const { data: subjects, isLoading: subjectsLoading } = trpc.subjects.list.useQuery();
   const { data: recentCoursewares, isLoading: recentLoading } = trpc.coursewares.recent.useQuery({ limit: 6 });
+  const { data: aboutData } = trpc.about.getAll.useQuery();
 
   const totalCoursewares = subjects?.reduce((acc, s) => acc + s.coursewareCount, 0) || 0;
 
@@ -89,7 +90,7 @@ export default function Home() {
       </section>
 
       {/* About Section — horizontal sliding cards */}
-      <AboutSlider language={language} />
+      <AboutSlider language={language} dbContent={aboutData} />
 
       {/* Subjects Section */}
       <section className="py-16">

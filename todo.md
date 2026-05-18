@@ -72,3 +72,4 @@
 - [x] Apply translations to AdminReview page
 - [x] Apply translations to NotFound page
 - [x] Add About The LanguageBridge section below hero on Home page (Challenge, Solution, Key Features, Who It's For, Our Goal) with EN/ZH translations
+- [x] Redesign About section as horizontal sliding paginated cards (aspect ratio similar to hero), change Challenge section from yellow to blue color scheme

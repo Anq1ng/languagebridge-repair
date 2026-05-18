@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import {
   FileText,
@@ -15,6 +16,7 @@ import { useState, useMemo } from "react";
 export default function Subjects() {
   const searchParams = new URLSearchParams(useSearch());
   const initialSubject = searchParams.get("subject") || "";
+  const { t, language } = useLanguage();
 
   const [selectedSubject, setSelectedSubject] = useState<string>(initialSubject);
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,9 +42,9 @@ export default function Subjects() {
       <div className="container py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Course Subjects</h1>
+          <h1 className="text-3xl font-bold">{t.subjects.title}</h1>
           <p className="text-muted-foreground mt-2">
-            Explore courseware organized by subject. Click any subject to filter, or search for specific materials.
+            {t.subjects.subtitle}
           </p>
         </div>
 
@@ -58,7 +60,7 @@ export default function Subjects() {
               size="sm"
               onClick={() => setSelectedSubject("")}
             >
-              All Subjects
+              {t.subjects.allSubjects}
             </Button>
             {subjects?.map((subject) => (
               <Button
@@ -79,7 +81,7 @@ export default function Subjects() {
         <div className="relative mb-8">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search courseware by title..."
+            placeholder={t.subjects.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 pr-10"
@@ -97,10 +99,18 @@ export default function Subjects() {
         {/* Results */}
         <div className="mb-4 text-sm text-muted-foreground">
           {coursewaresData && (
-            <span>{coursewaresData.total} courseware{coursewaresData.total !== 1 ? "s" : ""} found</span>
+            <span>
+              {language === "zh"
+                ? `共 ${coursewaresData.total} 条课件`
+                : `${coursewaresData.total} courseware${coursewaresData.total !== 1 ? "s" : ""} found`}
+            </span>
           )}
           {selectedSubjectObj && (
-            <span> in <strong>{selectedSubjectObj.nameEn}</strong></span>
+            <span>
+              {language === "zh"
+                ? `（${selectedSubjectObj.nameCn || selectedSubjectObj.nameEn}）`
+                : <> in <strong>{selectedSubjectObj.nameEn}</strong></>}
+            </span>
           )}
         </div>
 
@@ -117,11 +127,9 @@ export default function Subjects() {
         ) : (
           <div className="text-center py-16">
             <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-            <p className="text-muted-foreground text-lg">No coursewares found</p>
+            <p className="text-muted-foreground text-lg">{t.subjects.noResults}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              {searchQuery
-                ? "Try a different search term"
-                : "Be the first to upload courseware in this subject!"}
+              {t.subjects.noResultsSubtitle}
             </p>
           </div>
         )}
@@ -130,7 +138,7 @@ export default function Subjects() {
       {/* Footer */}
       <footer className="border-t py-8 mt-auto">
         <div className="container text-center text-sm text-muted-foreground">
-          <p>&copy; 2026 The LanguageBridge. All rights reserved.</p>
+          <p>{t.home.footer}</p>
         </div>
       </footer>
     </div>

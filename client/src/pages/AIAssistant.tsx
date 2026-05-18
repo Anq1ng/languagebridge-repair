@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import { AIChatBox, type Message } from "@/components/AIChatBox";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -7,6 +8,7 @@ import { Sparkles } from "lucide-react";
 
 export default function AIAssistant() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const { t } = useLanguage();
 
   const aiMutation = trpc.ai.askGeneral.useMutation({
     onSuccess: (data) => {
@@ -56,18 +58,18 @@ export default function AIAssistant() {
             </div>
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
-                AI Assistant
+                {t.ai.title}
                 <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary leading-none">
                   Beta
                 </span>
               </h1>
               <p className="text-sm text-muted-foreground">
-                Your multilingual academic assistant for LanguageBridge
+                {t.ai.subtitle}
               </p>
             </div>
           </div>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            Ask me anything about the courseware on this platform, academic concepts in subjects such as Physics, Chemistry, Biology, or Calculus BC, or how to navigate LanguageBridge. I can respond in any language — just ask in the language you prefer.
+            {t.ai.description}
           </p>
         </div>
 
@@ -77,9 +79,9 @@ export default function AIAssistant() {
             messages={messages}
             onSendMessage={handleSend}
             isLoading={aiMutation.isPending}
-            placeholder="Ask me anything about courseware or academic concepts..."
+            placeholder={t.ai.placeholder}
             height="calc(100vh - 280px)"
-            emptyStateMessage="Hi! I'm your LanguageBridge AI assistant. How can I help you today?"
+            emptyStateMessage={t.ai.emptyState}
             suggestedPrompts={suggestedPrompts}
           />
         </div>
@@ -87,10 +89,9 @@ export default function AIAssistant() {
         {/* AI Technology Footer */}
         <div className="mt-4 pt-4 border-t border-border/40">
           <p className="text-xs text-muted-foreground/70 text-center">
-            Powered by{" "}
+            {t.ai.poweredBy}{" "}
             <span className="font-medium text-muted-foreground">Google Gemini 2.5 Flash</span>
-            {" "}via the Manus platform.
-            Responses are AI-generated and may not always be accurate — please verify important information independently.
+            {" "}{t.ai.disclaimer}
           </p>
         </div>
       </div>

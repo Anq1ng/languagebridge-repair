@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import {
   Upload as UploadIcon,
@@ -29,6 +30,7 @@ export default function UploadPage() {
   const { data: adminSession, isLoading: adminSessionLoading } = trpc.admin.session.useQuery();
   const { data: subjects } = trpc.subjects.list.useQuery();
   const [, navigate] = useLocation();
+  const { t, language } = useLanguage();
 
   const [file, setFile] = useState<File | null>(null);
   const [titleEn, setTitleEn] = useState("");
@@ -47,16 +49,16 @@ export default function UploadPage() {
       const status = data.status === "approved" ? "approved" : "pending";
       setUploadedStatus(status);
       if (status === "pending") {
-        toast.success("Courseware submitted for administrator review.");
+        toast.success(language === "zh" ? "课件已提交管理员审核。" : "Courseware submitted for administrator review.");
       } else {
-        toast.success("Courseware uploaded and published successfully!");
+        toast.success(language === "zh" ? "课件上传并发布成功！" : "Courseware uploaded and published successfully!");
         setTimeout(() => {
           navigate(`/courseware/${data.id}`);
         }, 1500);
       }
     },
     onError: (error) => {
-      toast.error(error.message || "Upload failed. Please try again.");
+      toast.error(error.message || (language === "zh" ? "上传失败，请重试。" : "Upload failed. Please try again."));
       setUploading(false);
     },
   });
@@ -82,11 +84,11 @@ export default function UploadPage() {
       "image/webp",
     ];
     if (!allowedTypes.includes(f.type)) {
-      toast.error("Unsupported file type. Please upload PDF, PPT, PPTX, PNG, JPG, or WEBP.");
+      toast.error(language === "zh" ? "不支持的文件类型，请上传 PDF、PPT、PPTX、PNG、JPG 或 WEBP。" : "Unsupported file type. Please upload PDF, PPT, PPTX, PNG, JPG, or WEBP.");
       return;
     }
     if (f.size > MAX_FILE_SIZE) {
-      toast.error("File size exceeds 30MB limit.");
+      toast.error(language === "zh" ? "文件大小超过 30MB 限制。" : "File size exceeds 30MB limit.");
       return;
     }
     setFile(f);
@@ -105,15 +107,15 @@ export default function UploadPage() {
 
   const handleSubmit = async () => {
     if (!file) {
-      toast.error("Please select a file to upload.");
+      toast.error(language === "zh" ? "请选择要上传的文件。" : "Please select a file to upload.");
       return;
     }
     if (!titleEn.trim()) {
-      toast.error("Please enter a title (English).");
+      toast.error(language === "zh" ? "请输入英文标题。" : "Please enter a title (English).");
       return;
     }
     if (!subjectId) {
-      toast.error("Please select a subject.");
+      toast.error(language === "zh" ? "请选择科目。" : "Please select a subject.");
       return;
     }
 
@@ -155,7 +157,7 @@ export default function UploadPage() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
-            <p className="text-muted-foreground">Checking administrator mode...</p>
+            <p className="text-muted-foreground">{t.common.loading}</p>
           </div>
         </div>
       </div>
@@ -171,16 +173,18 @@ export default function UploadPage() {
           <div className="text-center">
             <CheckCircle className="h-16 w-16 mx-auto text-green-500 mb-4" />
             <h2 className="text-2xl font-bold mb-2">
-              {uploadedStatus === "pending" ? "Submitted for Review" : "Upload Successful!"}
+              {uploadedStatus === "pending"
+                ? (language === "zh" ? "已提交审核" : "Submitted for Review")
+                : t.upload.successTitle}
             </h2>
             <p className="text-muted-foreground">
               {uploadedStatus === "pending"
-                ? "Your file is waiting for administrator approval and is not publicly visible yet."
-                : "Redirecting to your courseware..."}
+                ? (language === "zh" ? "您的文件正在等待管理员审核，暂不公开显示。" : "Your file is waiting for administrator approval and is not publicly visible yet.")
+                : (language === "zh" ? "正在跳转到您的课件..." : "Redirecting to your courseware...")}
             </p>
             {uploadedStatus === "pending" && (
               <Link href="/subjects">
-                <Button className="mt-4">Back to Subjects</Button>
+                <Button className="mt-4">{language === "zh" ? "返回科目" : "Back to Subjects"}</Button>
               </Link>
             )}
           </div>
@@ -195,11 +199,11 @@ export default function UploadPage() {
 
       <div className="container py-8 max-w-2xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Upload Courseware</h1>
+          <h1 className="text-3xl font-bold">{t.upload.title}</h1>
           <p className="text-muted-foreground mt-2">
             {isAdminMode
-              ? "Administrator uploads are published immediately."
-              : "Share your course materials with the community. New uploads enter administrator review before becoming public."}
+              ? (language === "zh" ? "管理员上传的课件将立即发布。" : "Administrator uploads are published immediately.")
+              : (language === "zh" ? "与社区分享你的课程资料。新上传的内容需经管理员审核后才公开。" : "Share your course materials with the community. New uploads enter administrator review before becoming public.")}
           </p>
         </div>
 
@@ -207,7 +211,7 @@ export default function UploadPage() {
           <CardContent className="p-6 space-y-6">
             {/* File Upload Area */}
             <div>
-              <Label className="mb-2 block">Course File *</Label>
+              <Label className="mb-2 block">{language === "zh" ? "课件文件 *" : "Course File *"}</Label>
               {file ? (
                 <div className="flex items-center gap-3 p-4 border rounded-lg bg-muted/50">
                   <FileText className="h-8 w-8 text-primary" />
@@ -229,9 +233,9 @@ export default function UploadPage() {
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <UploadIcon className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-sm font-medium">Drag & drop your file here, or click to browse</p>
+                  <p className="text-sm font-medium">{language === "zh" ? "拖放文件到此处，或点击浏览" : "Drag & drop your file here, or click to browse"}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Supports PDF, PPT, PPTX, PNG, JPG, WEBP (max 30MB)
+                    {language === "zh" ? "支持 PDF、PPT、PPTX、PNG、JPG、WEBP（最大 30MB）" : "Supports PDF, PPT, PPTX, PNG, JPG, WEBP (max 30MB)"}
                   </p>
                 </div>
               )}
@@ -247,7 +251,7 @@ export default function UploadPage() {
             {/* Title Fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="titleEn">Title (English) *</Label>
+                <Label htmlFor="titleEn">{t.upload.titleEn} *</Label>
                 <Input
                   id="titleEn"
                   placeholder="e.g., Organic Chemistry: Functional Groups"
@@ -256,7 +260,7 @@ export default function UploadPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="titleCn">Title (中文)</Label>
+                <Label htmlFor="titleCn">{t.upload.titleCn}</Label>
                 <Input
                   id="titleCn"
                   placeholder="例如：有机化学：官能团"
@@ -268,10 +272,10 @@ export default function UploadPage() {
 
             {/* Subject */}
             <div>
-              <Label>Subject *</Label>
+              <Label>{t.upload.subject} *</Label>
               <Select value={subjectId} onValueChange={setSubjectId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a subject" />
+                  <SelectValue placeholder={t.upload.selectSubject} />
                 </SelectTrigger>
                 <SelectContent>
                   {subjects?.map((subject) => (
@@ -285,7 +289,7 @@ export default function UploadPage() {
 
             {/* Description Fields */}
             <div>
-              <Label htmlFor="descEn">Description (English)</Label>
+              <Label htmlFor="descEn">{t.upload.descriptionEn}</Label>
               <Textarea
                 id="descEn"
                 placeholder="Brief description of the courseware content..."
@@ -295,7 +299,7 @@ export default function UploadPage() {
               />
             </div>
             <div>
-              <Label htmlFor="descCn">Description (中文)</Label>
+              <Label htmlFor="descCn">{t.upload.descriptionCn}</Label>
               <Textarea
                 id="descCn"
                 placeholder="课件内容的简要描述..."
@@ -315,12 +319,12 @@ export default function UploadPage() {
                 {uploading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Uploading...
+                    {t.upload.submitting}
                   </>
                 ) : (
                   <>
                     <UploadIcon className="h-4 w-4" />
-                    Upload Courseware
+                    {t.upload.submit}
                   </>
                 )}
               </Button>

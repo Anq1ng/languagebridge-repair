@@ -1,42 +1,45 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import {
   ClipboardCheck,
+  Globe,
   LogIn,
   LogOut,
-  Shield,
-  User,
-  Sparkles,
   Menu,
+  Shield,
+  Sparkles,
+  User,
   X,
 } from "lucide-react";
-import { Link, useLocation } from "wouter";
-import { toast } from "sonner";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Link, useLocation } from "wouter";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { language, setLanguage, t } = useLanguage();
   const utils = trpc.useUtils();
   const { data: adminSession } = trpc.admin.session.useQuery();
   const adminLogin = trpc.admin.login.useMutation({
     onSuccess: async () => {
       await utils.admin.session.invalidate();
-      toast.success("Administrator mode enabled.");
+      toast.success(language === "zh" ? "管理员模式已启用。" : "Administrator mode enabled.");
       setLocation("/admin/review");
       setMobileMenuOpen(false);
     },
     onError: (error) => {
-      toast.error(error.message || "Administrator login failed.");
+      toast.error(error.message || (language === "zh" ? "管理员登录失败。" : "Administrator login failed."));
     },
   });
   const adminLogout = trpc.admin.logout.useMutation({
     onSuccess: async () => {
       await utils.admin.session.invalidate();
-      toast.success("Administrator mode exited.");
+      toast.success(language === "zh" ? "已退出管理员模式。" : "Administrator mode exited.");
       if (location.startsWith("/admin")) setLocation("/");
       setMobileMenuOpen(false);
     },
@@ -45,17 +48,21 @@ export default function Navbar() {
   const isAdminMode = Boolean(adminSession?.isAdminMode);
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/subjects", label: "Subjects" },
-    { href: "/upload", label: "Upload" },
-    { href: "/ai", label: "AI Assistant", icon: <Sparkles className="h-4 w-4" />, badge: "Beta" },
-    ...(isAdminMode ? [{ href: "/admin/review", label: "Review", icon: <ClipboardCheck className="h-4 w-4" /> }] : []),
+    { href: "/", label: t.nav.home },
+    { href: "/subjects", label: t.nav.subjects },
+    { href: "/upload", label: t.nav.upload },
+    { href: "/ai", label: t.nav.aiAssistant, icon: <Sparkles className="h-4 w-4" />, badge: "Beta" },
+    ...(isAdminMode ? [{ href: "/admin/review", label: t.nav.review, icon: <ClipboardCheck className="h-4 w-4" /> }] : []),
   ];
 
   const handleAdminLogin = () => {
-    const password = window.prompt("Enter administrator password");
+    const password = window.prompt(language === "zh" ? "请输入管理员密码" : "Enter administrator password");
     if (!password) return;
     adminLogin.mutate({ password });
+  };
+
+  const toggleLanguage = () => {
+    setLanguage(language === "en" ? "zh" : "en");
   };
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
@@ -92,11 +99,23 @@ export default function Navbar() {
 
         {/* Desktop Right Actions */}
         <div className="hidden md:flex items-center gap-2">
+          {/* Language Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-sm"
+            onClick={toggleLanguage}
+            title={language === "en" ? "切换为中文" : "Switch to English"}
+          >
+            <Globe className="h-4 w-4" />
+            <span className="font-medium">{language === "en" ? "中文" : "EN"}</span>
+          </Button>
+
           {isAdminMode ? (
             <>
               <div className="flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
                 <Shield className="h-3.5 w-3.5" />
-                Admin mode
+                {t.nav.adminMode}
               </div>
               <Button
                 variant="outline"
@@ -104,7 +123,7 @@ export default function Navbar() {
                 onClick={() => adminLogout.mutate()}
                 disabled={adminLogout.isPending}
               >
-                Exit Admin
+                {t.nav.exitAdmin}
               </Button>
             </>
           ) : (
@@ -116,7 +135,7 @@ export default function Navbar() {
               disabled={adminLogin.isPending}
             >
               <Shield className="h-4 w-4" />
-              <span>Admin Login</span>
+              <span>{t.nav.adminLogin}</span>
             </Button>
           )}
 
@@ -134,7 +153,7 @@ export default function Navbar() {
             <a href={getLoginUrl()}>
               <Button size="sm" className="gap-1">
                 <LogIn className="h-4 w-4" />
-                <span>Login</span>
+                <span>{t.nav.login}</span>
               </Button>
             </a>
           )}
@@ -176,12 +195,23 @@ export default function Navbar() {
             {/* Divider */}
             <div className="border-t border-border/40 my-1" />
 
+            {/* Language Toggle (Mobile) */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 text-sm"
+              onClick={() => { toggleLanguage(); closeMobileMenu(); }}
+            >
+              <Globe className="h-4 w-4" />
+              {language === "en" ? "切换为中文" : "Switch to English"}
+            </Button>
+
             {/* Admin Section */}
             {isAdminMode ? (
               <>
                 <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-amber-800 bg-amber-50 rounded-md">
                   <Shield className="h-3.5 w-3.5" />
-                  Administrator mode active
+                  {t.nav.adminModeActive}
                 </div>
                 <Button
                   variant="outline"
@@ -191,7 +221,7 @@ export default function Navbar() {
                   disabled={adminLogout.isPending}
                 >
                   <Shield className="h-4 w-4" />
-                  Exit Admin Mode
+                  {t.nav.exitAdminMode}
                 </Button>
               </>
             ) : (
@@ -203,7 +233,7 @@ export default function Navbar() {
                 disabled={adminLogin.isPending}
               >
                 <Shield className="h-4 w-4" />
-                Admin Login
+                {t.nav.adminLogin}
               </Button>
             )}
 
@@ -216,14 +246,14 @@ export default function Navbar() {
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => { logout(); closeMobileMenu(); }}>
                   <LogOut className="h-4 w-4" />
-                  <span className="ml-1">Logout</span>
+                  <span className="ml-1">{t.nav.logout}</span>
                 </Button>
               </div>
             ) : (
               <a href={getLoginUrl()} onClick={closeMobileMenu}>
                 <Button size="sm" className="w-full gap-2">
                   <LogIn className="h-4 w-4" />
-                  Login
+                  {t.nav.login}
                 </Button>
               </a>
             )}

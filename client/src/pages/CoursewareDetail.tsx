@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
@@ -21,6 +22,7 @@ export default function CoursewareDetail() {
   const params = useParams<{ id: string }>();
   const coursewareId = parseInt(params.id || "0");
   const [, navigate] = useLocation();
+  const { t, language } = useLanguage();
   const { data: adminSession } = trpc.admin.session.useQuery();
   const [deleting, setDeleting] = useState(false);
 
@@ -35,11 +37,11 @@ export default function CoursewareDetail() {
   const { data: subjects } = trpc.subjects.list.useQuery();
   const deleteMutation = trpc.coursewares.delete.useMutation({
     onSuccess: () => {
-      toast.success("Courseware deleted successfully!");
+      toast.success(language === "zh" ? "课件已成功删除！" : "Courseware deleted successfully!");
       navigate("/subjects");
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to delete courseware");
+      toast.error(error.message || (language === "zh" ? "删除课件失败" : "Failed to delete courseware"));
       setDeleting(false);
     },
   });
@@ -52,7 +54,7 @@ export default function CoursewareDetail() {
       ]);
     },
     onError: (error) => {
-      toast.error(error.message || "AI assistant failed to respond.");
+      toast.error(error.message || (language === "zh" ? "AI 助手回复失败。" : "AI assistant failed to respond."));
     },
   });
 
@@ -61,7 +63,7 @@ export default function CoursewareDetail() {
 
   const handleDelete = async () => {
     if (!courseware) return;
-    if (!window.confirm("Are you sure you want to delete this courseware? This action cannot be undone.")) {
+    if (!window.confirm(language === "zh" ? "确定要删除这个课件吗？此操作无法撤销。" : "Are you sure you want to delete this courseware? This action cannot be undone.")) {
       return;
     }
     setDeleting(true);
@@ -104,10 +106,10 @@ export default function CoursewareDetail() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-            <h2 className="text-xl font-bold mb-2">Courseware Not Found</h2>
-            <p className="text-muted-foreground mb-4">The courseware you're looking for doesn't exist.</p>
+            <h2 className="text-xl font-bold mb-2">{language === "zh" ? "课件未找到" : "Courseware Not Found"}</h2>
+            <p className="text-muted-foreground mb-4">{language === "zh" ? "您要查找的课件不存在。" : "The courseware you're looking for doesn't exist."}</p>
             <Link href="/subjects">
-              <Button>Browse Subjects</Button>
+              <Button>{t.home.browseSubjects}</Button>
             </Link>
           </div>
         </div>
@@ -130,12 +132,19 @@ export default function CoursewareDetail() {
   const previewUrl = `/api/coursewares/${courseware.id}/file`;
   const downloadUrl = `/api/coursewares/${courseware.id}/download`;
 
-  const aiSuggestedPrompts = [
-    `What is this courseware about?`,
-    `Explain the key concepts in ${subject?.nameEn || "this subject"}`,
-    `How can I use this material for studying?`,
-    `Summarize the main topics covered`,
-  ];
+  const aiSuggestedPrompts = language === "zh"
+    ? [
+        "这份课件主要讲什么？",
+        `请解释 ${subject?.nameCn || subject?.nameEn || "本科目"} 的核心概念`,
+        "如何利用这份资料学习？",
+        "总结主要内容",
+      ]
+    : [
+        `What is this courseware about?`,
+        `Explain the key concepts in ${subject?.nameEn || "this subject"}`,
+        `How can I use this material for studying?`,
+        `Summarize the main topics covered`,
+      ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -146,7 +155,7 @@ export default function CoursewareDetail() {
         <Link href="/subjects">
           <Button variant="ghost" className="gap-2 mb-6">
             <ArrowLeft className="h-4 w-4" />
-            Back to Subjects
+            {t.detail.back}
           </Button>
         </Link>
 
@@ -173,14 +182,14 @@ export default function CoursewareDetail() {
                 ) : (
                   <div className="flex flex-col items-center justify-center p-12 text-center">
                     <FileText className="h-16 w-16 text-muted-foreground/50 mb-4" />
-                    <p className="text-lg font-medium mb-2">Preview not available</p>
+                    <p className="text-lg font-medium mb-2">{language === "zh" ? "无法预览" : "Preview not available"}</p>
                     <p className="text-sm text-muted-foreground mb-4">
-                      This file type ({courseware.fileType.toUpperCase()}) cannot be previewed inline.
+                      {language === "zh" ? `该文件类型（${courseware.fileType.toUpperCase()}）无法内嵌预览。` : `This file type (${courseware.fileType.toUpperCase()}) cannot be previewed inline.`}
                     </p>
                     <a href={downloadUrl} download={courseware.fileName}>
                       <Button className="gap-2">
                         <Download className="h-4 w-4" />
-                        Download File
+                        {t.detail.download}
                       </Button>
                     </a>
                   </div>
@@ -214,7 +223,7 @@ export default function CoursewareDetail() {
                 <div className="space-y-3 pt-4 border-t">
                   <div className="flex items-center gap-2 text-sm">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <span>{courseware.uploaderName || "Anonymous"}</span>
+                    <span>{courseware.uploaderName || t.detail.anonymous}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -228,7 +237,7 @@ export default function CoursewareDetail() {
 
                 {(courseware.descriptionEn || courseware.descriptionCn) && (
                   <div className="pt-4 border-t">
-                    <h3 className="font-medium text-sm mb-2">Description</h3>
+                    <h3 className="font-medium text-sm mb-2">{language === "zh" ? "描述" : "Description"}</h3>
                     {courseware.descriptionEn && (
                       <p className="text-sm text-muted-foreground mb-2">{courseware.descriptionEn}</p>
                     )}
@@ -242,7 +251,7 @@ export default function CoursewareDetail() {
                   <a href={downloadUrl} download={courseware.fileName}>
                     <Button className="w-full gap-2">
                       <Download className="h-4 w-4" />
-                      Download
+                      {t.detail.download}
                     </Button>
                   </a>
                   {isAdminMode && (
@@ -255,12 +264,12 @@ export default function CoursewareDetail() {
                       {deleting ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Deleting...
+                          {language === "zh" ? "删除中..." : "Deleting..."}
                         </>
                       ) : (
                         <>
                           <Trash2 className="h-4 w-4" />
-                          Delete
+                          {t.admin.delete}
                         </>
                       )}
                     </Button>
@@ -274,7 +283,7 @@ export default function CoursewareDetail() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  AI Assistant
+                  {t.detail.aiAssistant}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 px-4 pb-4">
@@ -282,9 +291,9 @@ export default function CoursewareDetail() {
                   messages={aiMessages}
                   onSendMessage={handleAiSend}
                   isLoading={aiMutation.isPending}
-                  placeholder="Ask about this courseware..."
+                  placeholder={t.detail.aiPlaceholder}
                   height="400px"
-                  emptyStateMessage="Ask me anything about this courseware"
+                  emptyStateMessage={t.detail.aiSubtitle}
                   suggestedPrompts={aiSuggestedPrompts}
                 />
               </CardContent>

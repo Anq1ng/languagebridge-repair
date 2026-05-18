@@ -64,3 +64,10 @@
 - [x] Update System Prompt to instruct AI to always reply in the same language as the user's question
 - [x] Add Beta badge to AI Assistant nav link and page title
 - [x] Add AI technology explanation footer at the bottom of AI Assistant page
+- [x] Add globe language toggle button to the left of Admin Login in navbar (EN/ZH switch)
+- [x] Create LanguageContext with EN/ZH translations for all UI text across pages
+- [x] Apply translations to Subjects page
+- [x] Apply translations to Upload page
+- [x] Apply translations to CoursewareDetail page
+- [x] Apply translations to AdminReview page
+- [x] Apply translations to NotFound page

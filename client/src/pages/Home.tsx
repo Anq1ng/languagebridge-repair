@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 import {
@@ -16,6 +17,7 @@ import { Link } from "wouter";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const { data: subjects, isLoading: subjectsLoading } = trpc.subjects.list.useQuery();
   const { data: recentCoursewares, isLoading: recentLoading } = trpc.coursewares.recent.useQuery({ limit: 6 });
 
@@ -31,33 +33,33 @@ export default function Home() {
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary mb-6">
               <BookOpen className="h-4 w-4" />
-              Open Collaborative Platform for Students
+              {t.home.badge}
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
-              The <span className="text-primary">LanguageBridge</span>
+              {t.home.title} <span className="text-primary">{t.home.titleBrand}</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Help exchange students better understand bilingual courses through collaborative courseware sharing.
+              {t.home.subtitle}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Link href="/subjects">
                 <Button size="lg" className="gap-2">
                   <BookOpen className="h-4 w-4" />
-                  Browse Subjects
+                  {t.home.browseSubjects}
                 </Button>
               </Link>
               {isAuthenticated ? (
                 <Link href="/upload">
                   <Button size="lg" variant="outline" className="gap-2">
                     <Upload className="h-4 w-4" />
-                    Upload Courseware
+                    {t.home.uploadCourseware}
                   </Button>
                 </Link>
               ) : (
                 <a href={getLoginUrl()}>
                   <Button size="lg" variant="outline" className="gap-2">
                     <Upload className="h-4 w-4" />
-                    Login to Upload
+                    {t.home.loginToUpload}
                   </Button>
                 </a>
               )}
@@ -68,18 +70,18 @@ export default function Home() {
           <div className="mt-16 grid grid-cols-3 gap-4 max-w-lg mx-auto">
             <div className="text-center">
               <div className="text-2xl font-bold text-foreground">{totalCoursewares}</div>
-              <div className="text-sm text-muted-foreground">Coursewares</div>
+              <div className="text-sm text-muted-foreground">{t.home.coursewares}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-foreground">{subjects?.length || 0}</div>
-              <div className="text-sm text-muted-foreground">Subjects</div>
+              <div className="text-sm text-muted-foreground">{t.home.subjects}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-foreground">
                 <Users className="h-5 w-5 inline mr-1" />
-                Open
+                {t.home.open}
               </div>
-              <div className="text-sm text-muted-foreground">Community</div>
+              <div className="text-sm text-muted-foreground">{t.home.community}</div>
             </div>
           </div>
         </div>
@@ -90,12 +92,12 @@ export default function Home() {
         <div className="container">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-bold">Explore by Subject</h2>
-              <p className="text-muted-foreground mt-1">Browse courseware organized by subject</p>
+              <h2 className="text-2xl font-bold">{t.home.exploreBySubject}</h2>
+              <p className="text-muted-foreground mt-1">{t.home.exploreSubtitle}</p>
             </div>
             <Link href="/subjects">
               <Button variant="ghost" className="gap-1">
-                View All <ArrowRight className="h-4 w-4" />
+                {t.home.viewAll} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </div>
@@ -137,12 +139,12 @@ export default function Home() {
         <div className="container">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-bold">Recently Uploaded</h2>
-              <p className="text-muted-foreground mt-1">Latest courseware from the community</p>
+              <h2 className="text-2xl font-bold">{t.home.recentlyUploaded}</h2>
+              <p className="text-muted-foreground mt-1">{t.home.recentSubtitle}</p>
             </div>
             <Link href="/subjects">
               <Button variant="ghost" className="gap-1">
-                View All <ArrowRight className="h-4 w-4" />
+                {t.home.viewAll} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </div>
@@ -160,19 +162,19 @@ export default function Home() {
           ) : (
             <div className="text-center py-12">
               <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">No coursewares uploaded yet. Be the first to contribute!</p>
+              <p className="text-muted-foreground">{t.home.noCoursewares}</p>
               {isAuthenticated ? (
                 <Link href="/upload">
                   <Button className="mt-4 gap-2">
                     <Upload className="h-4 w-4" />
-                    Upload Courseware
+                    {t.home.uploadCourseware}
                   </Button>
                 </Link>
               ) : (
                 <a href={getLoginUrl()}>
                   <Button className="mt-4 gap-2">
                     <Upload className="h-4 w-4" />
-                    Login to Upload
+                    {t.home.loginToUpload}
                   </Button>
                 </a>
               )}
@@ -184,7 +186,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t py-8 mt-auto">
         <div className="container text-center text-sm text-muted-foreground">
-          <p>&copy; 2026 The LanguageBridge. All rights reserved.</p>
+          <p>{t.home.footer}</p>
         </div>
       </footer>
     </div>

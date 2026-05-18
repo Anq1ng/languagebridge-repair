@@ -87,10 +87,15 @@ export default function AboutSlider({ language, dbContent }: Props) {
             </div>
             <h3 className="text-2xl font-bold">{zh ? (db("features")?.titleZh || "主要功能") : (db("features")?.titleEn || "Key Features")}</h3>
           </div>
-          {db("features")?.bodyEn ? (
-            <p className="text-muted-foreground leading-relaxed text-base text-center max-w-2xl mx-auto">
-              {zh ? (db("features")?.bodyZh || "") : (db("features")?.bodyEn || "")}
-            </p>
+          {(zh ? db("features")?.bodyZh : db("features")?.bodyEn) ? (
+            <div className="flex flex-col items-center gap-3 max-w-2xl mx-auto w-full">
+              {(zh ? (db("features")?.bodyZh || "") : (db("features")?.bodyEn || ""))
+                .split("\n")
+                .filter((line) => line.trim())
+                .map((line, i) => (
+                  <p key={i} className="text-muted-foreground leading-relaxed text-base text-center">{line.trim()}</p>
+                ))}
+            </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
               {[
@@ -123,10 +128,15 @@ export default function AboutSlider({ language, dbContent }: Props) {
             </div>
             <h3 className="text-2xl font-bold">{zh ? (db("who")?.titleZh || "适合哪些人") : (db("who")?.titleEn || "Who It's For")}</h3>
           </div>
-          {db("who")?.bodyEn ? (
-            <p className="text-muted-foreground leading-relaxed text-base text-center max-w-2xl mx-auto">
-              {zh ? (db("who")?.bodyZh || "") : (db("who")?.bodyEn || "")}
-            </p>
+          {(zh ? db("who")?.bodyZh : db("who")?.bodyEn) ? (
+            <div className="flex flex-col items-center gap-3 max-w-2xl mx-auto w-full">
+              {(zh ? (db("who")?.bodyZh || "") : (db("who")?.bodyEn || ""))
+                .split("\n")
+                .filter((line) => line.trim())
+                .map((line, i) => (
+                  <p key={i} className="text-muted-foreground leading-relaxed text-base text-center">{line.trim()}</p>
+                ))}
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 flex-1">
               {[

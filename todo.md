@@ -84,3 +84,4 @@
 - [x] Add admin dropdown in navbar with 3 entries + red dot on Pending when files exist
 - [x] Fix About slider: all slides use flex-col items-center justify-center for vertical centering (Key Features and Who It's For currently top-aligned)
 - [x] Fix About slider: container uses fixed aspect-ratio causing content to not reflow on smaller screens; change to min-height + auto height so content wraps correctly
+- [x] Fix Key Features and Who It's For slides: split body text by newline and render each line as a separate item instead of one run-on paragraph

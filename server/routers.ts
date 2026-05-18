@@ -27,6 +27,7 @@ import {
   setAdminModeCookie,
   verifyAdminPassword,
 } from "./adminMode";
+import { invokeLLM } from "./_core/llm";
 
 const ALLOWED_FILE_TYPES = ["pdf", "ppt", "pptx", "png", "jpg", "jpeg", "webp"];
 
@@ -63,6 +64,126 @@ const coursewareMetadataInput = z.object({
   subjectId: z.number(),
 });
 
+// ===== AI Router =====
+
+const historySchema = z
+  .array(
+    z.object({
+      role: z.enum(["user", "assistant"]),
+      content: z.string(),
+    })
+  )
+  .optional()
+  .default([]);
+
+const aiRouter = router({
+  askAboutCourseware: publicProcedure
+    .input(
+      z.object({
+        coursewareId: z.number(),
+        question: z.string().min(1).max(2000),
+        history: historySchema,
+      })
+    )
+    .mutation(async ({ input }) => {
+      const courseware = await getApprovedCoursewareById(input.coursewareId);
+      if (!courseware) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Courseware not found." });
+      }
+      const subject = await getSubjectById(courseware.subjectId);
+
+      const contextLines: string[] = [
+        `Title (English): ${courseware.titleEn}`,
+      ];
+      if (courseware.titleCn) contextLines.push(`Title (Chinese): ${courseware.titleCn}`);
+      if (subject) contextLines.push(`Subject: ${subject.nameEn} (${subject.nameCn})`);
+      if (courseware.descriptionEn) contextLines.push(`Description (English): ${courseware.descriptionEn}`);
+      if (courseware.descriptionCn) contextLines.push(`Description (Chinese): ${courseware.descriptionCn}`);
+      contextLines.push(`File Type: ${courseware.fileType.toUpperCase()}`);
+      contextLines.push(`Uploaded by: ${courseware.uploaderName || "Anonymous"}`);
+
+      const systemPrompt = [
+        "You are LanguageBridge AI, an academic assistant for exchange students.",
+        "You help students understand bilingual courseware materials.",
+        "Answer questions based on the courseware metadata provided below.",
+        "Be concise, accurate, and educational. Support both English and Chinese responses.",
+        "",
+        "=== Courseware Information ===",
+        contextLines.join("\n"),
+        "",
+        "Note: You only have access to the courseware metadata (title, description, subject).",
+        "You cannot read the actual file content, but you can explain concepts related to the subject and title.",
+      ].join("\n");
+
+      const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+        { role: "system", content: systemPrompt },
+        ...input.history.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+        { role: "user", content: input.question },
+      ];
+
+      const result = await invokeLLM({ messages });
+      const rawContent = result.choices[0]?.message?.content;
+      const answer = typeof rawContent === "string" ? rawContent : "Sorry, I could not generate a response.";
+      return { answer };
+    }),
+
+  askGeneral: publicProcedure
+    .input(
+      z.object({
+        question: z.string().min(1).max(2000),
+        history: historySchema,
+      })
+    )
+    .mutation(async ({ input }) => {
+      const [allSubjects, recentCoursewares] = await Promise.all([
+        getAllSubjects(),
+        listCoursewares({ limit: 50 }),
+      ]);
+
+      const subjectSummary = allSubjects
+        .map((s) => `- ${s.nameEn} (${s.nameCn})`)
+        .join("\n");
+
+      const coursewareSummary = recentCoursewares.items
+        .slice(0, 20)
+        .map((cw) => {
+          const subject = allSubjects.find((s) => s.id === cw.subjectId);
+          return `- [${subject?.nameEn || "Unknown"}] ${cw.titleEn}${cw.titleCn ? ` / ${cw.titleCn}` : ""}`;
+        })
+        .join("\n");
+
+      const systemPrompt = [
+        "You are LanguageBridge AI, an academic assistant for exchange students.",
+        "LanguageBridge is a bilingual courseware sharing platform for exchange students.",
+        "You help students find, understand, and learn from academic courseware.",
+        "Be helpful, concise, and educational. Support both English and Chinese responses.",
+        "",
+        "=== Available Subjects ===",
+        subjectSummary || "No subjects available.",
+        "",
+        "=== Recently Available Courseware ===",
+        coursewareSummary || "No courseware available yet.",
+        "",
+        "You can help students:",
+        "1. Find relevant courseware for their studies",
+        "2. Understand academic concepts in Physics, Chemistry, Biology, and Calculus BC",
+        "3. Navigate the LanguageBridge platform",
+        "4. Get bilingual explanations of course materials",
+      ].join("\n");
+
+      const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+        { role: "system", content: systemPrompt },
+        ...input.history.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+        { role: "user", content: input.question },
+      ];
+
+      const result = await invokeLLM({ messages });
+      const rawContent = result.choices[0]?.message?.content;
+      const answer = typeof rawContent === "string" ? rawContent : "Sorry, I could not generate a response.";
+      return { answer };
+    }),
+});
+
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -92,6 +213,8 @@ export const appRouter = router({
       return { success: true, isAdminMode: false } as const;
     }),
   }),
+
+  ai: aiRouter,
 
   subjects: router({
     list: publicProcedure.query(async () => {

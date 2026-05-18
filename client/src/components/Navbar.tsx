@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { ClipboardCheck, LogIn, LogOut, Shield, Upload, User } from "lucide-react";
+import { ClipboardCheck, LogIn, LogOut, Shield, Upload, User, Sparkles } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 
@@ -35,6 +35,7 @@ export default function Navbar() {
     { href: "/", label: "Home" },
     { href: "/subjects", label: "Subjects" },
     { href: "/upload", label: "Upload" },
+    { href: "/ai", label: "AI Assistant" },
     ...(isAdminMode ? [{ href: "/admin/review", label: "Review" }] : []),
   ];
 

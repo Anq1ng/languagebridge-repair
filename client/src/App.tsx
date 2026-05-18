@@ -9,6 +9,8 @@ import Subjects from "./pages/Subjects";
 import UploadPage from "./pages/Upload";
 import CoursewareDetail from "./pages/CoursewareDetail";
 import AdminReviewPage from "./pages/AdminReview";
+import AIAssistant from "./pages/AIAssistant";
+
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -18,6 +20,7 @@ function Router() {
       <Route path={"/upload"} component={UploadPage} />
       <Route path={"/courseware/:id"} component={CoursewareDetail} />
       <Route path={"/admin/review"} component={AdminReviewPage} />
+      <Route path={"/ai"} component={AIAssistant} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -11,9 +11,11 @@ import {
   User,
   Loader2,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 import { Link, useParams, useLocation } from "wouter";
 import { useState } from "react";
+import { AIChatBox, type Message } from "@/components/AIChatBox";
 
 export default function CoursewareDetail() {
   const params = useParams<{ id: string }>();
@@ -21,6 +23,9 @@ export default function CoursewareDetail() {
   const [, navigate] = useLocation();
   const { data: adminSession } = trpc.admin.session.useQuery();
   const [deleting, setDeleting] = useState(false);
+
+  // AI chat state
+  const [aiMessages, setAiMessages] = useState<Message[]>([]);
 
   const { data: courseware, isLoading } = trpc.coursewares.getById.useQuery(
     { id: coursewareId },
@@ -38,6 +43,19 @@ export default function CoursewareDetail() {
       setDeleting(false);
     },
   });
+
+  const aiMutation = trpc.ai.askAboutCourseware.useMutation({
+    onSuccess: (data) => {
+      setAiMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.answer },
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error.message || "AI assistant failed to respond.");
+    },
+  });
+
   const subject = subjects?.find((s) => s.id === courseware?.subjectId);
   const isAdminMode = Boolean(adminSession?.isAdminMode);
 
@@ -48,6 +66,24 @@ export default function CoursewareDetail() {
     }
     setDeleting(true);
     await deleteMutation.mutateAsync({ id: courseware.id });
+  };
+
+  const handleAiSend = (content: string) => {
+    const newUserMessage: Message = { role: "user", content };
+    const updatedMessages = [...aiMessages, newUserMessage];
+    setAiMessages(updatedMessages);
+
+    // Build history excluding the new message (already in updatedMessages)
+    const history = updatedMessages
+      .filter((m) => m.role !== "system")
+      .slice(0, -1) // exclude the just-added user message
+      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+
+    aiMutation.mutate({
+      coursewareId,
+      question: content,
+      history,
+    });
   };
 
   if (isLoading) {
@@ -93,6 +129,13 @@ export default function CoursewareDetail() {
   const isImage = ["png", "jpg", "jpeg", "webp"].includes(courseware.fileType);
   const previewUrl = `/api/coursewares/${courseware.id}/file`;
   const downloadUrl = `/api/coursewares/${courseware.id}/download`;
+
+  const aiSuggestedPrompts = [
+    `What is this courseware about?`,
+    `Explain the key concepts in ${subject?.nameEn || "this subject"}`,
+    `How can I use this material for studying?`,
+    `Summarize the main topics covered`,
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -146,8 +189,9 @@ export default function CoursewareDetail() {
             </Card>
           </div>
 
-          {/* Sidebar - Metadata */}
+          {/* Sidebar */}
           <div className="space-y-4">
+            {/* Metadata Card */}
             <Card>
               <CardContent className="p-5 space-y-4">
                 <div>
@@ -222,6 +266,27 @@ export default function CoursewareDetail() {
                     </Button>
                   )}
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* AI Assistant Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  AI Assistant
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 px-4 pb-4">
+                <AIChatBox
+                  messages={aiMessages}
+                  onSendMessage={handleAiSend}
+                  isLoading={aiMutation.isPending}
+                  placeholder="Ask about this courseware..."
+                  height="400px"
+                  emptyStateMessage="Ask me anything about this courseware"
+                  suggestedPrompts={aiSuggestedPrompts}
+                />
               </CardContent>
             </Card>
           </div>

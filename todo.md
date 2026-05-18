@@ -54,3 +54,7 @@
 - [x] Add backend validation and tests for admin password, review status filtering, approval/rejection, and admin-only edit/delete permissions
 - [x] Configure administrator password through ADMIN_PASSWORD environment variable and verify it with a dedicated unit test
 - [x] Replace navbar logo with user-provided image (12.png)
+- [x] Add backend AI tRPC procedures: ai.askAboutCourseware (per-courseware Q&A with metadata context) and ai.askGeneral (global Q&A across all approved coursewares)
+- [x] Integrate AI chat sidebar into CoursewareDetail page for per-courseware Q&A
+- [x] Add standalone /ai page with global AI assistant and register route + navbar entry
+- [x] Write vitest tests for AI procedures

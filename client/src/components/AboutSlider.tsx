@@ -237,21 +237,19 @@ export default function AboutSlider({ language }: Props) {
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Slides container */}
-          <div
-            className="flex h-full transition-transform duration-400 ease-in-out"
-            style={{ transform: `translateX(-${current * 100}%)`, width: `${slides.length * 100}%` }}
-          >
-            {slides.map((s) => (
-              <div
-                key={s.key}
-                className="h-full p-8 lg:p-12 flex flex-col justify-center"
-                style={{ width: `${100 / slides.length}%` }}
-              >
-                {s.content}
-              </div>
-            ))}
-          </div>
+          {/* Slides — absolute positioned, fade in/out */}
+          {slides.map((s, i) => (
+            <div
+              key={s.key}
+              className="absolute inset-0 p-8 lg:p-12 flex flex-col justify-center transition-opacity duration-300"
+              style={{
+                opacity: i === current ? 1 : 0,
+                pointerEvents: i === current ? "auto" : "none",
+              }}
+            >
+              {s.content}
+            </div>
+          ))}
 
           {/* Arrow buttons */}
           <button

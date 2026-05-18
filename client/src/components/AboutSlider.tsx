@@ -212,18 +212,17 @@ export default function AboutSlider({ language, dbContent }: Props) {
 
         {/* Slide card */}
         <div
-          className="relative rounded-2xl border bg-card shadow-sm overflow-hidden"
-          style={{ aspectRatio: "16 / 7", minHeight: "320px" }}
+          className="relative rounded-2xl border bg-card shadow-sm"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           {slides.map((s, i) => (
             <div
               key={s.key}
-              className="absolute inset-0 p-8 lg:p-12 flex flex-col justify-center transition-opacity duration-300"
+              className="p-8 lg:p-12 flex flex-col justify-center transition-opacity duration-300"
               style={{
                 opacity: i === current ? 1 : 0,
-                pointerEvents: i === current ? "auto" : "none",
+                display: i === current ? "flex" : "none",
               }}
             >
               {s.content}

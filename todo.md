@@ -83,3 +83,4 @@
 - [x] Split admin into 3 pages: AdminPending (/admin/pending), AdminSubjects (/admin/subjects), AdminAbout (/admin/about)
 - [x] Add admin dropdown in navbar with 3 entries + red dot on Pending when files exist
 - [x] Fix About slider: all slides use flex-col items-center justify-center for vertical centering (Key Features and Who It's For currently top-aligned)
+- [x] Fix About slider: container uses fixed aspect-ratio causing content to not reflow on smaller screens; change to min-height + auto height so content wraps correctly

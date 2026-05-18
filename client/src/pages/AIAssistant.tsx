@@ -55,7 +55,12 @@ export default function AIAssistant() {
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">AI Assistant</h1>
+              <h1 className="text-2xl font-bold flex items-center gap-2">
+                AI Assistant
+                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary leading-none">
+                  Beta
+                </span>
+              </h1>
               <p className="text-sm text-muted-foreground">
                 Your multilingual academic assistant for LanguageBridge
               </p>
@@ -77,6 +82,16 @@ export default function AIAssistant() {
             emptyStateMessage="Hi! I'm your LanguageBridge AI assistant. How can I help you today?"
             suggestedPrompts={suggestedPrompts}
           />
+        </div>
+
+        {/* AI Technology Footer */}
+        <div className="mt-4 pt-4 border-t border-border/40">
+          <p className="text-xs text-muted-foreground/70 text-center">
+            Powered by{" "}
+            <span className="font-medium text-muted-foreground">Google Gemini 2.5 Flash</span>
+            {" "}via the Manus platform.
+            Responses are AI-generated and may not always be accurate — please verify important information independently.
+          </p>
         </div>
       </div>
     </div>

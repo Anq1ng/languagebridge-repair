@@ -2,13 +2,24 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { ClipboardCheck, LogIn, LogOut, Shield, Upload, User, Sparkles } from "lucide-react";
+import {
+  ClipboardCheck,
+  LogIn,
+  LogOut,
+  Shield,
+  User,
+  Sparkles,
+  Menu,
+  X,
+} from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const utils = trpc.useUtils();
   const { data: adminSession } = trpc.admin.session.useQuery();
   const adminLogin = trpc.admin.login.useMutation({
@@ -16,6 +27,7 @@ export default function Navbar() {
       await utils.admin.session.invalidate();
       toast.success("Administrator mode enabled.");
       setLocation("/admin/review");
+      setMobileMenuOpen(false);
     },
     onError: (error) => {
       toast.error(error.message || "Administrator login failed.");
@@ -26,6 +38,7 @@ export default function Navbar() {
       await utils.admin.session.invalidate();
       toast.success("Administrator mode exited.");
       if (location.startsWith("/admin")) setLocation("/");
+      setMobileMenuOpen(false);
     },
   });
 
@@ -35,8 +48,8 @@ export default function Navbar() {
     { href: "/", label: "Home" },
     { href: "/subjects", label: "Subjects" },
     { href: "/upload", label: "Upload" },
-    { href: "/ai", label: "AI Assistant" },
-    ...(isAdminMode ? [{ href: "/admin/review", label: "Review" }] : []),
+    { href: "/ai", label: "AI Assistant", icon: <Sparkles className="h-4 w-4" /> },
+    ...(isAdminMode ? [{ href: "/admin/review", label: "Review", icon: <ClipboardCheck className="h-4 w-4" /> }] : []),
   ];
 
   const handleAdminLogin = () => {
@@ -45,41 +58,41 @@ export default function Navbar() {
     adminLogin.mutate({ password });
   };
 
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 shrink-0" onClick={closeMobileMenu}>
           <img src="/manus-storage/logo_3a3a6f7e.png" alt="LanguageBridge logo" className="h-9 w-9 object-contain" />
           <span className="font-bold text-lg hidden sm:inline">LanguageBridge</span>
         </Link>
 
-        <nav className="flex items-center gap-1">
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href}>
               <Button
                 variant={location === link.href ? "secondary" : "ghost"}
                 size="sm"
-                className="text-sm"
+                className="text-sm gap-1.5"
               >
+                {link.icon}
                 {link.label}
               </Button>
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        {/* Desktop Right Actions */}
+        <div className="hidden md:flex items-center gap-2">
           {isAdminMode ? (
             <>
-              <div className="hidden md:flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+              <div className="flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
                 <Shield className="h-3.5 w-3.5" />
                 Admin mode
               </div>
-              <Link href="/admin/review">
-                <Button size="sm" variant="secondary" className="gap-1">
-                  <ClipboardCheck className="h-4 w-4" />
-                  <span className="hidden sm:inline">Review</span>
-                </Button>
-              </Link>
               <Button
                 variant="outline"
                 size="sm"
@@ -98,7 +111,7 @@ export default function Navbar() {
               disabled={adminLogin.isPending}
             >
               <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin Login</span>
+              <span>Admin Login</span>
             </Button>
           )}
 
@@ -106,7 +119,7 @@ export default function Navbar() {
             <>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <User className="h-4 w-4" />
-                <span className="hidden sm:inline">{user?.name || "User"}</span>
+                <span className="max-w-[100px] truncate">{user?.name || "User"}</span>
               </div>
               <Button variant="ghost" size="sm" onClick={logout}>
                 <LogOut className="h-4 w-4" />
@@ -116,12 +129,97 @@ export default function Navbar() {
             <a href={getLoginUrl()}>
               <Button size="sm" className="gap-1">
                 <LogIn className="h-4 w-4" />
-                <span className="hidden sm:inline">Login</span>
+                <span>Login</span>
               </Button>
             </a>
           )}
         </div>
+
+        {/* Mobile: Hamburger Button */}
+        <button
+          className="md:hidden flex items-center justify-center h-9 w-9 rounded-md hover:bg-accent transition-colors"
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
+
+      {/* Mobile Dropdown Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-md">
+          <div className="container py-3 flex flex-col gap-1">
+            {/* Nav Links */}
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} onClick={closeMobileMenu}>
+                <Button
+                  variant={location === link.href ? "secondary" : "ghost"}
+                  size="sm"
+                  className="w-full justify-start gap-2 text-sm"
+                >
+                  {link.icon}
+                  {link.label}
+                </Button>
+              </Link>
+            ))}
+
+            {/* Divider */}
+            <div className="border-t border-border/40 my-1" />
+
+            {/* Admin Section */}
+            {isAdminMode ? (
+              <>
+                <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-amber-800 bg-amber-50 rounded-md">
+                  <Shield className="h-3.5 w-3.5" />
+                  Administrator mode active
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start gap-2"
+                  onClick={() => adminLogout.mutate()}
+                  disabled={adminLogout.isPending}
+                >
+                  <Shield className="h-4 w-4" />
+                  Exit Admin Mode
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2"
+                onClick={() => { handleAdminLogin(); }}
+                disabled={adminLogin.isPending}
+              >
+                <Shield className="h-4 w-4" />
+                Admin Login
+              </Button>
+            )}
+
+            {/* Auth Section */}
+            {isAuthenticated ? (
+              <div className="flex items-center justify-between px-1 py-1">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="h-4 w-4" />
+                  <span className="max-w-[160px] truncate">{user?.name || "User"}</span>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => { logout(); closeMobileMenu(); }}>
+                  <LogOut className="h-4 w-4" />
+                  <span className="ml-1">Logout</span>
+                </Button>
+              </div>
+            ) : (
+              <a href={getLoginUrl()} onClick={closeMobileMenu}>
+                <Button size="sm" className="w-full gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Login
+                </Button>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

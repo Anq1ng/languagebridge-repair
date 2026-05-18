@@ -58,3 +58,4 @@
 - [x] Integrate AI chat sidebar into CoursewareDetail page for per-courseware Q&A
 - [x] Add standalone /ai page with global AI assistant and register route + navbar entry
 - [x] Write vitest tests for AI procedures
+- [x] Fix mobile navbar: replace fixed horizontal nav with responsive hamburger menu to prevent overlap on small screens

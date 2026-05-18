@@ -14,7 +14,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { Language } from "@/contexts/LanguageContext";
 
 interface Props {
@@ -32,34 +31,17 @@ export default function AboutSlider({ language }: Props) {
     {
       key: "challenge",
       label: zh ? "挑战" : "The Challenge",
-      icon: <AlertTriangle className="h-6 w-6 text-primary" />,
       content: (
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-14 items-center h-full">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="text-2xl font-bold">{zh ? "我们面临的挑战" : "The Challenge"}</h3>
-            </div>
-            <p className="text-muted-foreground leading-relaxed text-base">
-              {zh
-                ? "每年都有新的交换生加入我们学校。他们大多英语流利，但几乎不懂中文。尽管老师会使用英文幻灯片和资料，但主要讲解往往是中文。虽然这些学生考试时不需要掌握每个细节，但当他们完全跨不过课堂内容时，就很难参与课堂活动，也很难真正融入我们的学校社区。"
-                : "Every year, new exchange students join our school. Most have strong English skills but almost no Chinese. While teachers use English slides and materials, the main explanations are often in Chinese. Although these students don't need to master every detail for exams, when they can't follow the lessons at all, it becomes difficult for them to participate in class or feel included in our school community."}
-            </p>
+        <div className="flex flex-col items-center text-center gap-5 max-w-2xl mx-auto">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="h-6 w-6 text-primary" />
           </div>
-          <div className="flex-shrink-0 w-full lg:w-72 rounded-2xl bg-primary/5 border border-primary/15 p-7 flex flex-col gap-4">
-            {[
-              zh ? "英语流利但不懂中文的交换生" : "Exchange students fluent in English but not Chinese",
-              zh ? "老师用英文幻灯片，但讲解以中文为主" : "Teachers use English slides, but explain in Chinese",
-              zh ? "难以参与课堂互动和学校社区" : "Hard to participate in class or feel part of the community",
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className="mt-1.5 w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                <p className="text-sm text-foreground">{item}</p>
-              </div>
-            ))}
-          </div>
+          <h3 className="text-2xl font-bold">{zh ? "我们面临的挑战" : "The Challenge"}</h3>
+          <p className="text-muted-foreground leading-relaxed text-base">
+            {zh
+              ? "每年都有新的交换生加入我们学校。他们大多英语流利，但几乎不懂中文。尽管老师会使用英文幻灯片和资料，但主要讲解往往是中文。虽然这些学生考试时不需要掌握每个细节，但当他们完全跨不过课堂内容时，就很难参与课堂活动，也很难真正融入我们的学校社区。"
+              : "Every year, new exchange students join our school. Most have strong English skills but almost no Chinese. While teachers use English slides and materials, the main explanations are often in Chinese. Although these students don't need to master every detail for exams, when they can't follow the lessons at all, it becomes difficult for them to participate in class or feel included in our school community."}
+          </p>
         </div>
       ),
     },
@@ -67,35 +49,17 @@ export default function AboutSlider({ language }: Props) {
     {
       key: "solution",
       label: zh ? "解决方案" : "Our Solution",
-      icon: <Lightbulb className="h-6 w-6 text-primary" />,
       content: (
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-14 items-center h-full">
-          <div className="flex-shrink-0 w-full lg:w-72 rounded-2xl bg-primary/5 border border-primary/15 p-7 flex flex-col gap-4">
-            {[
-              zh ? "清晰的英文讲解和注释" : "Clear English explanations and annotations",
-              zh ? "与原始资料并列的双语内容" : "Bilingual content alongside original materials",
-              zh ? "AI 辅助翻译工具" : "AI-powered translation tools",
-              zh ? "帮助交换生更好地理解课堂内容" : "Help exchange students better understand lessons",
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className="mt-1.5 w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                <p className="text-sm text-foreground">{item}</p>
-              </div>
-            ))}
+        <div className="flex flex-col items-center text-center gap-5 max-w-2xl mx-auto">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Lightbulb className="h-6 w-6 text-primary" />
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Lightbulb className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="text-2xl font-bold">{zh ? "我们的解决方案" : "Our Solution"}</h3>
-            </div>
-            <p className="text-muted-foreground leading-relaxed text-base">
-              {zh
-                ? "The LanguageBridge 是一个协作平台，老师和同学共同努力让双语课程内容更清晰。我们在原始资料旁提供清晰的英文讲解、注释和 AI 辅助翻译工具，让交换生能够更好地理解所学内容，更深入地参与学习。"
-                : "The LanguageBridge is a collaborative platform where teachers and students work together to make bilingual course content clearer. We provide clear English explanations, annotations, and AI-powered translation tools alongside the original materials — so exchange students can better understand what's being taught and feel more connected to the learning experience."}
-            </p>
-          </div>
+          <h3 className="text-2xl font-bold">{zh ? "我们的解决方案" : "Our Solution"}</h3>
+          <p className="text-muted-foreground leading-relaxed text-base">
+            {zh
+              ? "The LanguageBridge 是一个协作平台，老师和同学共同努力让双语课程内容更清晰。我们在原始资料旁提供清晰的英文讲解、注释和 AI 辅助翻译工具，让交换生能够更好地理解所学内容，更深入地参与学习。"
+              : "The LanguageBridge is a collaborative platform where teachers and students work together to make bilingual course content clearer. We provide clear English explanations, annotations, and AI-powered translation tools alongside the original materials — so exchange students can better understand what's being taught and feel more connected to the learning experience."}
+          </p>
         </div>
       ),
     },
@@ -103,30 +67,26 @@ export default function AboutSlider({ language }: Props) {
     {
       key: "features",
       label: zh ? "主要功能" : "Key Features",
-      icon: <Sparkles className="h-6 w-6 text-primary" />,
       content: (
-        <div className="flex flex-col h-full">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="h-5 w-5 text-primary" />
+        <div className="flex flex-col h-full w-full">
+          <div className="flex items-center gap-3 mb-6 justify-center">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="h-6 w-6 text-primary" />
             </div>
             <h3 className="text-2xl font-bold">{zh ? "主要功能" : "Key Features"}</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
             {[
-              { icon: <FileText className="h-5 w-5 text-primary" />, title: zh ? "清晰的英文讲解" : "Clear English Explanations", desc: zh ? "每节课均附有易懂的英文笔记和重点" : "Every lesson includes easy-to-understand English notes and key points" },
-              { icon: <MessageSquare className="h-5 w-5 text-primary" />, title: zh ? "协作评论" : "Collaborative Comments", desc: zh ? "学生和老师可以一起添加讲解并讨论" : "Students and teachers can add explanations and discuss together" },
-              { icon: <Bot className="h-5 w-5 text-primary" />, title: zh ? "AI 翻译与总结" : "AI Translation & Summary", desc: zh ? "需要时即时获得帮助" : "Instant help when you need it" },
-              { icon: <LayoutGrid className="h-5 w-5 text-primary" />, title: zh ? "按科目分类" : "Organized by Subject", desc: zh ? "轻松找到数学、生物、化学、物理等科目的课件" : "Easy to find lessons from Math, Biology, Chemistry, Physics, and more" },
+              { icon: <FileText className="h-5 w-5 text-primary" />, title: zh ? "清晰的英文讲解" : "Clear English Explanations" },
+              { icon: <MessageSquare className="h-5 w-5 text-primary" />, title: zh ? "协作评论" : "Collaborative Comments" },
+              { icon: <Bot className="h-5 w-5 text-primary" />, title: zh ? "AI 翻译与总结" : "AI Translation & Summary" },
+              { icon: <LayoutGrid className="h-5 w-5 text-primary" />, title: zh ? "按科目分类" : "Organized by Subject" },
             ].map((f, i) => (
-              <div key={i} className="rounded-xl border bg-card p-5 flex gap-4 items-start">
+              <div key={i} className="rounded-xl border bg-background p-5 flex flex-col items-center gap-3 text-center">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   {f.icon}
                 </div>
-                <div>
-                  <h4 className="font-semibold text-sm mb-1">{f.title}</h4>
-                  <p className="text-xs text-muted-foreground">{f.desc}</p>
-                </div>
+                <h4 className="font-semibold text-sm">{f.title}</h4>
               </div>
             ))}
           </div>
@@ -137,12 +97,11 @@ export default function AboutSlider({ language }: Props) {
     {
       key: "who",
       label: zh ? "适合人群" : "Who It's For",
-      icon: <Users className="h-6 w-6 text-primary" />,
       content: (
-        <div className="flex flex-col h-full">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Users className="h-5 w-5 text-primary" />
+        <div className="flex flex-col h-full w-full">
+          <div className="flex items-center gap-3 mb-6 justify-center">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Users className="h-6 w-6 text-primary" />
             </div>
             <h3 className="text-2xl font-bold">{zh ? "适合哪些人" : "Who It's For"}</h3>
           </div>
@@ -152,7 +111,7 @@ export default function AboutSlider({ language }: Props) {
               { icon: <BookOpen className="h-6 w-6 text-primary" />, title: zh ? "老师" : "Teachers", desc: zh ? "分享更清晰的资料，支持所有学生" : "A space to share clearer materials and support all learners" },
               { icon: <Users className="h-6 w-6 text-primary" />, title: zh ? "所有同学" : "All Students", desc: zh ? "任何希望贡献讲解或用英文复习内容的同学" : "Anyone who wants to contribute explanations or review content in English" },
             ].map((u, i) => (
-              <div key={i} className="rounded-xl border bg-card p-6 text-center flex flex-col items-center gap-3">
+              <div key={i} className="rounded-xl border bg-background p-6 text-center flex flex-col items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                   {u.icon}
                 </div>
@@ -168,14 +127,13 @@ export default function AboutSlider({ language }: Props) {
     {
       key: "goal",
       label: zh ? "我们的目标" : "Our Goal",
-      icon: <Target className="h-6 w-6 text-primary" />,
       content: (
-        <div className="flex flex-col items-center justify-center h-full text-center gap-6">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Target className="h-8 w-8 text-primary" />
+        <div className="flex flex-col items-center justify-center h-full text-center gap-5 max-w-2xl mx-auto">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Target className="h-6 w-6 text-primary" />
           </div>
           <h3 className="text-2xl font-bold">{zh ? "我们的目标" : "Our Goal"}</h3>
-          <p className="text-muted-foreground leading-relaxed text-base max-w-2xl">
+          <p className="text-muted-foreground leading-relaxed text-base">
             {zh
               ? "我们相信，每一位学生都应该有机会理解课堂内容并感到被包容——无论其语言背景如何。通过让双语学习更易获取、更具协作性，我们希望为每个人创造一个更公平、更友好的学习环境。"
               : "We believe every student deserves the chance to understand and feel included in class — no matter their language background. By making bilingual learning more accessible and collaborative, we hope to create a more equitable and welcoming environment for everyone."}
@@ -230,14 +188,13 @@ export default function AboutSlider({ language }: Props) {
           ))}
         </div>
 
-        {/* Slide card — aspect ratio ~16:7 */}
+        {/* Slide card */}
         <div
           className="relative rounded-2xl border bg-card shadow-sm overflow-hidden"
           style={{ aspectRatio: "16 / 7", minHeight: "320px" }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Slides — absolute positioned, fade in/out */}
           {slides.map((s, i) => (
             <div
               key={s.key}

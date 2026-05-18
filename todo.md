@@ -71,3 +71,4 @@
 - [x] Apply translations to CoursewareDetail page
 - [x] Apply translations to AdminReview page
 - [x] Apply translations to NotFound page
+- [x] Add About The LanguageBridge section below hero on Home page (Challenge, Solution, Key Features, Who It's For, Our Goal) with EN/ZH translations

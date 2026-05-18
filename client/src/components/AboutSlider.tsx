@@ -80,8 +80,8 @@ export default function AboutSlider({ language, dbContent }: Props) {
       key: "features",
       label: zh ? "主要功能" : "Key Features",
       content: (
-        <div className="flex flex-col h-full w-full">
-          <div className="flex items-center gap-3 mb-6 justify-center">
+        <div className="flex flex-col items-center justify-center h-full w-full gap-5 text-center">
+          <div className="flex items-center gap-3 justify-center">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
@@ -116,8 +116,8 @@ export default function AboutSlider({ language, dbContent }: Props) {
       key: "who",
       label: zh ? "适合人群" : "Who It's For",
       content: (
-        <div className="flex flex-col h-full w-full">
-          <div className="flex items-center gap-3 mb-6 justify-center">
+        <div className="flex flex-col items-center justify-center h-full w-full gap-5 text-center">
+          <div className="flex items-center gap-3 justify-center">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Users className="h-6 w-6 text-primary" />
             </div>

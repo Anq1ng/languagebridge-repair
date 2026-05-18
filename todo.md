@@ -80,3 +80,6 @@
 - [x] Add About content editor panel in AdminReview page for admins to edit and save each slide
 - [x] Fix AdminReview About editor state initialization so unchanged fields retain existing DB values
 - [x] Make Features/Who slides also render DB body text (currently hardcoded card items)
+- [x] Split admin into 3 pages: AdminPending (/admin/pending), AdminSubjects (/admin/subjects), AdminAbout (/admin/about)
+- [x] Add admin dropdown in navbar with 3 entries + red dot on Pending when files exist
+- [x] Fix About slider: all slides use flex-col items-center justify-center for vertical centering (Key Features and Who It's For currently top-aligned)

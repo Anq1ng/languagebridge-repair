@@ -8,7 +8,9 @@ import Home from "./pages/Home";
 import Subjects from "./pages/Subjects";
 import UploadPage from "./pages/Upload";
 import CoursewareDetail from "./pages/CoursewareDetail";
-import AdminReviewPage from "./pages/AdminReview";
+import AdminPendingPage from "./pages/AdminPending";
+import AdminSubjectsPage from "./pages/AdminSubjects";
+import AdminAboutPage from "./pages/AdminAbout";
 import AIAssistant from "./pages/AIAssistant";
 
 function Router() {
@@ -19,7 +21,12 @@ function Router() {
       <Route path={"/subjects"} component={Subjects} />
       <Route path={"/upload"} component={UploadPage} />
       <Route path={"/courseware/:id"} component={CoursewareDetail} />
-      <Route path={"/admin/review"} component={AdminReviewPage} />
+      {/* Legacy admin route — redirect to /admin/pending */}
+      <Route path={"/admin/review"} component={() => { window.location.replace("/admin/pending"); return null; }} />
+      {/* New split admin routes */}
+      <Route path={"/admin/pending"} component={AdminPendingPage} />
+      <Route path={"/admin/subjects"} component={AdminSubjectsPage} />
+      <Route path={"/admin/about"} component={AdminAboutPage} />
       <Route path={"/ai"} component={AIAssistant} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />

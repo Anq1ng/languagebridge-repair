@@ -1,10 +1,19 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { getLoginUrl } from "@/const";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import {
-  ClipboardCheck,
+  BookOpen,
+  ChevronDown,
+  FileText,
   Globe,
   LogIn,
   LogOut,
@@ -25,11 +34,16 @@ export default function Navbar() {
   const { language, setLanguage, t } = useLanguage();
   const utils = trpc.useUtils();
   const { data: adminSession } = trpc.admin.session.useQuery();
+  const { data: pendingData } = trpc.coursewares.pending.useQuery(undefined, {
+    enabled: Boolean(adminSession?.isAdminMode),
+  });
+
   const adminLogin = trpc.admin.login.useMutation({
     onSuccess: async () => {
       await utils.admin.session.invalidate();
+      await utils.coursewares.pending.invalidate();
       toast.success(language === "zh" ? "管理员模式已启用。" : "Administrator mode enabled.");
-      setLocation("/admin/review");
+      setLocation("/admin/pending");
       setMobileMenuOpen(false);
     },
     onError: (error) => {
@@ -46,13 +60,35 @@ export default function Navbar() {
   });
 
   const isAdminMode = Boolean(adminSession?.isAdminMode);
+  const pendingCount = pendingData?.items?.length ?? 0;
+  const hasPending = isAdminMode && pendingCount > 0;
 
   const navLinks = [
     { href: "/", label: t.nav.home },
     { href: "/subjects", label: t.nav.subjects },
     { href: "/upload", label: t.nav.upload },
     { href: "/ai", label: t.nav.aiAssistant, icon: <Sparkles className="h-4 w-4" />, badge: "Beta" },
-    ...(isAdminMode ? [{ href: "/admin/review", label: t.nav.review, icon: <ClipboardCheck className="h-4 w-4" /> }] : []),
+  ];
+
+  const adminLinks = [
+    {
+      href: "/admin/pending",
+      label: language === "zh" ? "待审文件" : "Pending Review",
+      icon: <FileText className="h-4 w-4" />,
+      showDot: hasPending,
+    },
+    {
+      href: "/admin/subjects",
+      label: language === "zh" ? "科目管理" : "Manage Subjects",
+      icon: <BookOpen className="h-4 w-4" />,
+      showDot: false,
+    },
+    {
+      href: "/admin/about",
+      label: language === "zh" ? "编辑 About" : "Edit About",
+      icon: <FileText className="h-4 w-4" />,
+      showDot: false,
+    },
   ];
 
   const handleAdminLogin = () => {
@@ -111,21 +147,44 @@ export default function Navbar() {
             <span className="font-medium">{language === "en" ? "中文" : "EN"}</span>
           </Button>
 
+          {/* Admin Dropdown or Login Button */}
           {isAdminMode ? (
-            <>
-              <div className="flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                <Shield className="h-3.5 w-3.5" />
-                {t.nav.adminMode}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => adminLogout.mutate()}
-                disabled={adminLogout.isPending}
-              >
-                {t.nav.exitAdmin}
-              </Button>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5 relative">
+                  <Shield className="h-4 w-4 text-amber-600" />
+                  <span className="text-amber-700 font-medium">
+                    {language === "zh" ? "管理员" : "Admin"}
+                  </span>
+                  {hasPending && (
+                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-background" />
+                  )}
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {adminLinks.map((link) => (
+                  <DropdownMenuItem key={link.href} asChild>
+                    <Link href={link.href} className="flex items-center gap-2 cursor-pointer">
+                      {link.icon}
+                      <span>{link.label}</span>
+                      {link.showDot && (
+                        <span className="ml-auto flex h-2 w-2 rounded-full bg-red-500" />
+                      )}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive cursor-pointer"
+                  onClick={() => adminLogout.mutate()}
+                  disabled={adminLogout.isPending}
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  {language === "zh" ? "退出管理员模式" : "Exit Admin Mode"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button
               variant="outline"
@@ -161,11 +220,14 @@ export default function Navbar() {
 
         {/* Mobile: Hamburger Button */}
         <button
-          className="md:hidden flex items-center justify-center h-9 w-9 rounded-md hover:bg-accent transition-colors"
+          className="md:hidden flex items-center justify-center h-9 w-9 rounded-md hover:bg-accent transition-colors relative"
           onClick={() => setMobileMenuOpen((prev) => !prev)}
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {hasPending && !mobileMenuOpen && (
+            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+          )}
         </button>
       </div>
 
@@ -211,17 +273,32 @@ export default function Navbar() {
               <>
                 <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-amber-800 bg-amber-50 rounded-md">
                   <Shield className="h-3.5 w-3.5" />
-                  {t.nav.adminModeActive}
+                  {language === "zh" ? "管理员模式已激活" : "Administrator mode active"}
                 </div>
+                {adminLinks.map((link) => (
+                  <Link key={link.href} href={link.href} onClick={closeMobileMenu}>
+                    <Button
+                      variant={location === link.href ? "secondary" : "ghost"}
+                      size="sm"
+                      className="w-full justify-start gap-2 text-sm"
+                    >
+                      {link.icon}
+                      {link.label}
+                      {link.showDot && (
+                        <span className="ml-auto h-2 w-2 rounded-full bg-red-500" />
+                      )}
+                    </Button>
+                  </Link>
+                ))}
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 text-destructive hover:text-destructive"
                   onClick={() => adminLogout.mutate()}
                   disabled={adminLogout.isPending}
                 >
                   <Shield className="h-4 w-4" />
-                  {t.nav.exitAdminMode}
+                  {language === "zh" ? "退出管理员模式" : "Exit Admin Mode"}
                 </Button>
               </>
             ) : (

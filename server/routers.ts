@@ -106,7 +106,8 @@ const aiRouter = router({
         "You are LanguageBridge AI, an academic assistant for exchange students.",
         "You help students understand bilingual courseware materials.",
         "Answer questions based on the courseware metadata provided below.",
-        "Be concise, accurate, and educational. Support both English and Chinese responses.",
+        "IMPORTANT: Always reply in the same language the user used in their question. If the user writes in Chinese, reply in Chinese. If in English, reply in English. If in any other language, reply in that language.",
+        "Be concise, accurate, and educational.",
         "",
         "=== Courseware Information ===",
         contextLines.join("\n"),
@@ -154,9 +155,10 @@ const aiRouter = router({
 
       const systemPrompt = [
         "You are LanguageBridge AI, an academic assistant for exchange students.",
-        "LanguageBridge is a bilingual courseware sharing platform for exchange students.",
+        "LanguageBridge is a courseware sharing platform for exchange students.",
         "You help students find, understand, and learn from academic courseware.",
-        "Be helpful, concise, and educational. Support both English and Chinese responses.",
+        "IMPORTANT: Always reply in the same language the user used in their question. If the user writes in Chinese, reply in Chinese. If in English, reply in English. If in any other language, reply in that language.",
+        "Be helpful, concise, and educational.",
         "",
         "=== Available Subjects ===",
         subjectSummary || "No subjects available.",

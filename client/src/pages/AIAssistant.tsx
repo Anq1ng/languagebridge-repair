@@ -57,12 +57,12 @@ export default function AIAssistant() {
             <div>
               <h1 className="text-2xl font-bold">AI Assistant</h1>
               <p className="text-sm text-muted-foreground">
-                Your bilingual academic assistant for LanguageBridge
+                Your multilingual academic assistant for LanguageBridge
               </p>
             </div>
           </div>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            Ask me anything about the courseware on this platform, academic concepts in Physics, Chemistry, Biology, or Calculus BC, or how to navigate LanguageBridge. I support both English and Chinese.
+            Ask me anything about the courseware on this platform, academic concepts in Physics, Chemistry, Biology, or Calculus BC, or how to navigate LanguageBridge. I can respond in any language — just ask in the language you prefer.
           </p>
         </div>
 

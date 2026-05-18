@@ -60,3 +60,5 @@
 - [x] Write vitest tests for AI procedures
 - [x] Fix mobile navbar: replace fixed horizontal nav with responsive hamburger menu to prevent overlap on small screens
 - [x] Fix AI response rendering: integrate KaTeX to properly render LaTeX math formulas instead of showing raw $...$ symbols
+- [x] Update AI Assistant page subtitle and description to reflect multilingual support (not just English and Chinese)
+- [x] Update System Prompt to instruct AI to always reply in the same language as the user's question

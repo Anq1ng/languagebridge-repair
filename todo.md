@@ -85,3 +85,4 @@
 - [x] Fix About slider: all slides use flex-col items-center justify-center for vertical centering (Key Features and Who It's For currently top-aligned)
 - [x] Fix About slider: container uses fixed aspect-ratio causing content to not reflow on smaller screens; change to min-height + auto height so content wraps correctly
 - [x] Fix Key Features and Who It's For slides: split body text by newline and render each line as a separate item instead of one run-on paragraph
+- [x] Fix hero section height: use min-h-[calc(100vh-navbar)] so it fills the full viewport and doesn't show content below the fold

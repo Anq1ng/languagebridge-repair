@@ -2,7 +2,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "wouter";
 import { Mail, Github } from "lucide-react";
 
-const LOGO_URL = "/manus-storage/logo_3a3a6f7e.png";
+const LOGO_URL = "/manus-storage/logo_transparent_b6cf60b6.png";
 const GITHUB_URL = "https://github.com/Anq1ng/languagebridge-repair";
 const EMAIL = "jiacheng0923@outlook.com";
 
@@ -59,7 +59,7 @@ export default function Footer() {
             <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
               {tagline}
             </p>
-            <p className="text-xs text-slate-500 mt-1">{aiNote}</p>
+
           </div>
 
           {/* Column 2: Quick Links */}
@@ -123,7 +123,7 @@ export default function Footer() {
       <div className="border-t border-slate-800">
         <div className="container py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
           <span>{copyright}</span>
-          <span>{aiNote}</span>
+          <span className="text-slate-600">{aiNote}</span>
         </div>
       </div>
     </footer>

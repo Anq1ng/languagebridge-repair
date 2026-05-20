@@ -108,7 +108,7 @@ export default function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0" onClick={closeMobileMenu}>
-          <img src="/manus-storage/logo_3a3a6f7e.png" alt="LanguageBridge logo" className="h-9 w-9 object-contain" />
+          <img src="/manus-storage/logo_transparent_b6cf60b6.png" alt="LanguageBridge logo" className="h-9 w-9 object-contain" />
           <span className="font-bold text-lg hidden sm:inline">LanguageBridge</span>
         </Link>
 

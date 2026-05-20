@@ -31,7 +31,6 @@ export default function Footer() {
       : "Bridging Language Barriers for Inclusive Bilingual Learning";
 
   const madeByLabel = language === "zh" ? "制作团队" : "Made by";
-  const aiNote = language === "zh" ? "由 Manus AI 辅助完成" : "Assisted by Manus AI";
   const copyright = language === "zh"
     ? "© 2026 The LanguageBridge. 保留所有权利。"
     : "© 2026 The LanguageBridge. All rights reserved.";
@@ -123,7 +122,7 @@ export default function Footer() {
       <div className="border-t border-slate-800">
         <div className="container py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
           <span>{copyright}</span>
-          <span className="text-slate-600">{aiNote}</span>
+
         </div>
       </div>
     </footer>

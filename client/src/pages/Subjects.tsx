@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import {
@@ -135,12 +136,7 @@ export default function Subjects() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="border-t py-8 mt-auto">
-        <div className="container text-center text-sm text-muted-foreground">
-          <p>{t.home.footer}</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

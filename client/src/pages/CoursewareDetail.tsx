@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -95,6 +96,7 @@ export default function CoursewareDetail() {
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
+        <Footer />
       </div>
     );
   }
@@ -113,6 +115,7 @@ export default function CoursewareDetail() {
             </Link>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -301,6 +304,7 @@ export default function CoursewareDetail() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

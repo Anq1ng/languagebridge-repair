@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import AboutSlider from "@/components/AboutSlider";
+import Footer from "@/components/Footer";
 import { Link } from "wouter";
 
 export default function Home() {
@@ -188,12 +189,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-8 mt-auto">
-        <div className="container text-center text-sm text-muted-foreground">
-          <p>{t.home.footer}</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

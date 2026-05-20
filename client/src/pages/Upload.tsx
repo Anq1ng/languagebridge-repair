@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import {
@@ -160,6 +161,7 @@ export default function UploadPage() {
             <p className="text-muted-foreground">{t.common.loading}</p>
           </div>
         </div>
+      <Footer />
       </div>
     );
   }
@@ -189,6 +191,7 @@ export default function UploadPage() {
             )}
           </div>
         </div>
+      <Footer />
       </div>
     );
   }
@@ -335,6 +338,7 @@ export default function UploadPage() {
           </CardContent>
         </Card>
       </div>
+      <Footer />
     </div>
   );
 }

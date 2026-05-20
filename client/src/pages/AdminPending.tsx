@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -123,6 +124,7 @@ export default function AdminPendingPage() {
         <main className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </main>
+        <Footer />
       </div>
     );
   }
@@ -255,6 +257,7 @@ export default function AdminPendingPage() {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -81,6 +82,7 @@ export default function AdminAboutPage() {
         <main className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </main>
+        <Footer />
       </div>
     );
   }
@@ -178,6 +180,7 @@ export default function AdminAboutPage() {
           </CardContent>
         </Card>
       </main>
+      <Footer />
     </div>
   );
 }

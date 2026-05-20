@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { AIChatBox, type Message } from "@/components/AIChatBox";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
@@ -95,6 +96,7 @@ export default function AIAssistant() {
           </p>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
